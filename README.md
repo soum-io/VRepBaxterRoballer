@@ -1,7 +1,7 @@
 # ECE 470 Motion Demonstration Project Checkpoint
 ### Group Members: _Michael Shea_ & _Jacob Heglund_
 ## Purpose
-This document is meant to explain how to obtain the results that are displayed in [this video.](www.youtube.com) The first steps were to choose a robot and a simulation enviroment. We chose to use [_V-Rep_](http://www.coppeliarobotics.com/) for our simulation enviroment and [Baxter](http://www.rethinkrobotics.com/baxter/) as the robot. The following steps are a guide to reproduce what we did in a _Windows 10_ enviroment. There are many way to control a robot in V-Rep. We chose to use the [Remote API](http://www.coppeliarobotics.com/helpFiles/en/remoteApiFunctionsPython.htm) with [Python 3](). We used the [Spyder IDE](https://www.python.org/downloads/) for all the programming.
+This document is meant to explain how to obtain the results that are displayed in [this video.](https://www.youtube.com/watch?v=eGtkdITqq8g) The first steps were to choose a robot and a simulation enviroment. We chose to use [_V-Rep_](http://www.coppeliarobotics.com/) for our simulation enviroment and [Baxter](http://www.rethinkrobotics.com/baxter/) as the robot. The following steps are a guide to reproduce what we did in a _Windows 10_ enviroment. There are many way to control a robot in V-Rep. We chose to use the [Remote API](http://www.coppeliarobotics.com/helpFiles/en/remoteApiFunctionsPython.htm) with [Python 3](). We used the [Spyder IDE](https://www.python.org/downloads/) for all the programming.
 
 ## Steps Taken
 1. First, [download V-Rep.](http://www.coppeliarobotics.com/) This guide assumes you will download the x64 _Windows 10_ version of V-Rep.
