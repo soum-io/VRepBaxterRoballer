@@ -67,45 +67,33 @@ vrep.simxStartSimulation(clientID, vrep.simx_opmode_oneshot)
 # Wait two seconds
 time.sleep(2)
 
-'''
+
 # starting position
+print('Moving to Initial Position')
 for i in range(7):
-    vrep.simxSetJointTargetPosition(clientID, rightArm[i], np.deg2rad(30), vrep.simx_opmode_oneshot)
-    vrep.simxSetJointTargetPosition(clientID, leftArm[i], np.deg2rad(30), vrep.simx_opmode_oneshot)
-for i in range(3):
-    vrep.simxSetJointTargetPosition(clientID, bodyJoints[i], np.deg2rad(30), vrep.simx_opmode_oneshot)
-'''
+    vrep.simxSetJointTargetPosition(clientID, rightArm[i], 0, vrep.simx_opmode_oneshot)
+    vrep.simxSetJointTargetPosition(clientID, leftArm[i], 0, vrep.simx_opmode_oneshot)
+
 # move the robot joints
-for i in range(3):
-    vrep.simxSetJointTargetPosition(clientID, bodyJoints[i], (np.pi / 2), vrep.simx_opmode_oneshot)
-
+for i in range(3):    
+    vrep.simxSetJointTargetPosition(clientID, bodyJoints[i], np.deg2rad(15), vrep.simx_opmode_oneshot)
     time.sleep(2)
-    
     vrep.simxSetJointTargetPosition(clientID, bodyJoints[i], 0, vrep.simx_opmode_oneshot)
-    
     time.sleep(2)
 
 for i in range(7):
     vrep.simxSetJointTargetPosition(clientID, rightArm[i], (np.pi / 2), vrep.simx_opmode_oneshot)
     vrep.simxSetJointTargetPosition(clientID, leftArm[i], (np.pi / 2), vrep.simx_opmode_oneshot)
     
-    time.sleep(.5)
+    time.sleep(2)
     
     vrep.simxSetJointTargetPosition(clientID, rightArm[i], 0, vrep.simx_opmode_oneshot)
     vrep.simxSetJointTargetPosition(clientID, leftArm[i], 0, vrep.simx_opmode_oneshot)
     
-    time.sleep(.5)
+    time.sleep(2)
 
-for i in range(7):
-    vrep.simxSetJointTargetPosition(clientID, rightArm[i], 0, vrep.simx_opmode_oneshot)
-    vrep.simxSetJointTargetPosition(clientID, leftArm[i], 0, vrep.simx_opmode_oneshot)
-    
-    time.sleep(.5)
-    
-    vrep.simxSetJointTargetPosition(clientID, rightArm[i], (np.pi / 2), vrep.simx_opmode_oneshot)
-    vrep.simxSetJointTargetPosition(clientID, leftArm[i], (np.pi / 2), vrep.simx_opmode_oneshot)
-    
-    time.sleep(.5)
+vrep.simxSetJointTargetPosition(clientID, bodyJoints[1], 190, vrep.simx_opmode_oneshot)
+time.sleep(5)
 
 # Stop simulation
 vrep.simxStopSimulation(clientID, vrep.simx_opmode_oneshot)
@@ -115,13 +103,6 @@ vrep.simxGetPingTime(clientID)
 
 # Close the connection to V-REP
 vrep.simxFinish(clientID)
-
-
-
-
-
-
-
 
 
 
