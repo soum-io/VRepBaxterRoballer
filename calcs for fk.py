@@ -74,165 +74,162 @@ def TtoM(theta, s,M):
         T = T.dot(sl.expm(vskew(s[:,i])*theta[i,0]))
     return T.dot(M)
 
-#left arm (facing towards baxter)
-x=-10
-thetaLeft = np.array([[0], [math.radians(-45)], [math.radians(x)], [math.radians(x)], [math.radians(x)], [math.radians(x)], [math.radians(x)], [math.radians(x)]])
-ML = np.array([[1,0,0,.0815],
-              [0,1,0,1.2993],
-              [0,0,1,1.2454],
-              [0,0,0,1]])
+def leftArmPose(t1,t2,t3,t4,t5,t6,t7,t8):
+    #left arm (facing towards baxter)
+    thetaLeft = np.array([[math.radians(t1)], [math.radians(t2)], [math.radians(t3)], [math.radians(t4)], [math.radians(t5)], [math.radians(t6)], [math.radians(t7)], [math.radians(t8)]])
+    ML = np.array([[1,0,0,.0815],
+                  [0,1,0,1.2993],
+                  [0,0,1,1.2454],
+                  [0,0,0,1]])
+        
+    a0 = np.array([[0],[0],[1]])
+    q0 = np.array([[.0177],[.0032],[.8777]])
+    bottom0 = np.dot(-skew(a0),q0)
+    S0 = np.zeros((6,1))
+    S0[:3] = np.copy(a0)
+    S0[3:] = np.copy(bottom0)
+        
+    a1 = np.array([[0],[0],[1]])
+    q1 = np.array([[.0815],[.2622],[1.0540]])
+    bottom1 = np.dot(-skew(a1),q1)
+    S1 = np.zeros((6,1))
+    S1[:3] = np.copy(a1)
+    S1[3:] = np.copy(bottom1)
     
-a0 = np.array([[0],[0],[1]])
-q0 = np.array([[.0177],[.0032],[.8777]])
-bottom0 = np.dot(-skew(a0),q0)
-S0 = np.zeros((6,1))
-S0[:3] = np.copy(a0)
-S0[3:] = np.copy(bottom0)
+    a2 = np.array([[-1],[0],[0]])
+    q2 = np.array([[.0815],[.3312],[1.3244]])
+    bottom2 = np.dot(-skew(a2),q2)
+    S2 = np.zeros((6,1))
+    S2[:3] = np.copy(a2)
+    S2[3:] = np.copy(bottom2)
     
-a1 = np.array([[0],[0],[1]])
-q1 = np.array([[.0815],[.2622],[1.0540]])
-bottom1 = np.dot(-skew(a1),q1)
-S1 = np.zeros((6,1))
-S1[:3] = np.copy(a1)
-S1[3:] = np.copy(bottom1)
-
-a2 = np.array([[-1],[0],[0]])
-q2 = np.array([[.0815],[.3312],[1.3244]])
-bottom2 = np.dot(-skew(a2),q2)
-S2 = np.zeros((6,1))
-S2[:3] = np.copy(a2)
-S2[3:] = np.copy(bottom2)
-
-a3 = np.array([[0],[1],[0]])
-q3 = np.array([[.0815],[.4332],[1.3244]])
-bottom3 = np.dot(-skew(a3),q3)
-S3 = np.zeros((6,1))
-S3[:3] = np.copy(a3)
-S3[3:] = np.copy(bottom3)
-
-a4 = np.array([[-1],[0],[0]])
-q4 = np.array([[.0815],[.6956],[1.2554]])
-bottom4 = np.dot(-skew(a4),q4)
-S4 = np.zeros((6,1))
-S4[:3] = np.copy(a4)
-S4[3:] = np.copy(bottom4)
-
-a5 = np.array([[0],[1],[0]])
-q5 = np.array([[.0815],[.7992],[1.2554]])
-bottom5 = np.dot(-skew(a5),q5)
-S5 = np.zeros((6,1))
-S5[:3] = np.copy(a5)
-S5[3:] = np.copy(bottom5)
-
-a6 = np.array([[-1],[0],[0]])
-q6 = np.array([[.0815],[1.0699],[1.2454]])
-bottom6 = np.dot(-skew(a6),q6)
-S6 = np.zeros((6,1))
-S6[:3] = np.copy(a6)
-S6[3:] = np.copy(bottom6)
-
-a7 = np.array([[0],[1],[0]])
-q7 = np.array([[.0815],[1.1859],[1.2454]])
-bottom7 = np.dot(-skew(a7),q7)
-S7 = np.zeros((6,1))
-S7[:3] = np.copy(a7)
-S7[3:] = np.copy(bottom7)
-
-s = np.zeros((6,thetaLeft.size))
-s[:,0] = S0.reshape((6))
-s[:,1] = S1.reshape((6))
-s[:,2] = S2.reshape((6))
-s[:,3] = S3.reshape((6))
-s[:,4] = S4.reshape((6))
-s[:,5] = S5.reshape((6))
-s[:,6] = S6.reshape((6))
-s[:,7] = S7.reshape((6))
-
-
-finalLeft = TtoM(thetaLeft,s,ML )
-
-print(repr(finalLeft))
-
-
-
-#right arm
-y = 10
-thetaRight= np.array([[0], [math.radians(45)], [math.radians(y)], [math.radians(y)], [math.radians(y)], [math.radians(y)], [math.radians(y)], [math.radians(y)]])
-MR = np.array([[1,0,0,.0818],
-              [0,1,0,-1.2929],
-              [0,0,1,1.2454],
-              [0,0,0,1]])
+    a3 = np.array([[0],[1],[0]])
+    q3 = np.array([[.0815],[.4332],[1.3244]])
+    bottom3 = np.dot(-skew(a3),q3)
+    S3 = np.zeros((6,1))
+    S3[:3] = np.copy(a3)
+    S3[3:] = np.copy(bottom3)
     
-a0 = np.array([[0],[0],[1]])
-q0 = np.array([[.0177],[.0032],[.8777]])
-bottom0 = np.dot(-skew(a0),q0)
-S0 = np.zeros((6,1))
-S0[:3] = np.copy(a0)
-S0[3:] = np.copy(bottom0)
+    a4 = np.array([[-1],[0],[0]])
+    q4 = np.array([[.0815],[.6956],[1.2554]])
+    bottom4 = np.dot(-skew(a4),q4)
+    S4 = np.zeros((6,1))
+    S4[:3] = np.copy(a4)
+    S4[3:] = np.copy(bottom4)
     
-a1 = np.array([[0],[0],[1]])
-q1 = np.array([[.0818],[-.2558],[1.0540]])
-bottom1 = np.dot(-skew(a1),q1)
-S1 = np.zeros((6,1))
-S1[:3] = np.copy(a1)
-S1[3:] = np.copy(bottom1)
-
-a2 = np.array([[1],[0],[0]])
-q2 = np.array([[.0818],[-.3248],[1.3244]])
-bottom2 = np.dot(-skew(a2),q2)
-S2 = np.zeros((6,1))
-S2[:3] = np.copy(a2)
-S2[3:] = np.copy(bottom2)
-
-a3 = np.array([[0],[-1],[0]])
-q3 = np.array([[.0818],[-.4268],[1.3244]])
-bottom3 = np.dot(-skew(a3),q3)
-S3 = np.zeros((6,1))
-S3[:3] = np.copy(a3)
-S3[3:] = np.copy(bottom3)
-
-a4 = np.array([[1],[0],[0]])
-q4 = np.array([[.0818],[-.6892],[1.2554]])
-bottom4 = np.dot(-skew(a4),q4)
-S4 = np.zeros((6,1))
-S4[:3] = np.copy(a4)
-S4[3:] = np.copy(bottom4)
-
-a5 = np.array([[0],[-1],[0]])
-q5 = np.array([[.0818],[-.7928],[1.2554]])
-bottom5 = np.dot(-skew(a5),q5)
-S5 = np.zeros((6,1))
-S5[:3] = np.copy(a5)
-S5[3:] = np.copy(bottom5)
-
-a6 = np.array([[1],[0],[0]])
-q6 = np.array([[.0818],[-1.0635],[1.2454]])
-bottom6 = np.dot(-skew(a6),q6)
-S6 = np.zeros((6,1))
-S6[:3] = np.copy(a6)
-S6[3:] = np.copy(bottom6)
-
-a7 = np.array([[0],[-1],[0]])
-q7 = np.array([[.0818],[-1.1795],[1.2454]])
-bottom7 = np.dot(-skew(a7),q7)
-S7 = np.zeros((6,1))
-S7[:3] = np.copy(a7)
-S7[3:] = np.copy(bottom7)
-
-s = np.zeros((6,thetaRight.size))
-s[:,0] = S0.reshape((6))
-s[:,1] = S1.reshape((6))
-s[:,2] = S2.reshape((6))
-s[:,3] = S3.reshape((6))
-s[:,4] = S4.reshape((6))
-s[:,5] = S5.reshape((6))
-s[:,6] = S6.reshape((6))
-s[:,7] = S7.reshape((6))
+    a5 = np.array([[0],[1],[0]])
+    q5 = np.array([[.0815],[.7992],[1.2554]])
+    bottom5 = np.dot(-skew(a5),q5)
+    S5 = np.zeros((6,1))
+    S5[:3] = np.copy(a5)
+    S5[3:] = np.copy(bottom5)
+    
+    a6 = np.array([[-1],[0],[0]])
+    q6 = np.array([[.0815],[1.0699],[1.2454]])
+    bottom6 = np.dot(-skew(a6),q6)
+    S6 = np.zeros((6,1))
+    S6[:3] = np.copy(a6)
+    S6[3:] = np.copy(bottom6)
+    
+    a7 = np.array([[0],[1],[0]])
+    q7 = np.array([[.0815],[1.1859],[1.2454]])
+    bottom7 = np.dot(-skew(a7),q7)
+    S7 = np.zeros((6,1))
+    S7[:3] = np.copy(a7)
+    S7[3:] = np.copy(bottom7)
+    
+    s = np.zeros((6,thetaLeft.size))
+    s[:,0] = S0.reshape((6))
+    s[:,1] = S1.reshape((6))
+    s[:,2] = S2.reshape((6))
+    s[:,3] = S3.reshape((6))
+    s[:,4] = S4.reshape((6))
+    s[:,5] = S5.reshape((6))
+    s[:,6] = S6.reshape((6))
+    s[:,7] = S7.reshape((6))
+    
+    
+    finalLeft = TtoM(thetaLeft,s,ML )
+    return finalLeft
 
 
-finalRight = TtoM(thetaRight,s,MR )
-
-print(repr(finalRight))
+def rightArmPose(t1,t2,t3,t4,t5,t6,t7,t8):
+    #right arm
+    thetaRight= np.array([[math.radians(t1)], [math.radians(t2)], [math.radians(t3)], [math.radians(t4)], [math.radians(t5)], [math.radians(t6)], [math.radians(t7)], [math.radians(t8)]])
+    MR = np.array([[1,0,0,.0818],
+                  [0,1,0,-1.2929],
+                  [0,0,1,1.2454],
+                  [0,0,0,1]])
+        
+    a0 = np.array([[0],[0],[1]])
+    q0 = np.array([[.0177],[.0032],[.8777]])
+    bottom0 = np.dot(-skew(a0),q0)
+    S0 = np.zeros((6,1))
+    S0[:3] = np.copy(a0)
+    S0[3:] = np.copy(bottom0)
+        
+    a1 = np.array([[0],[0],[1]])
+    q1 = np.array([[.0818],[-.2558],[1.0540]])
+    bottom1 = np.dot(-skew(a1),q1)
+    S1 = np.zeros((6,1))
+    S1[:3] = np.copy(a1)
+    S1[3:] = np.copy(bottom1)
+    
+    a2 = np.array([[1],[0],[0]])
+    q2 = np.array([[.0818],[-.3248],[1.3244]])
+    bottom2 = np.dot(-skew(a2),q2)
+    S2 = np.zeros((6,1))
+    S2[:3] = np.copy(a2)
+    S2[3:] = np.copy(bottom2)
+    
+    a3 = np.array([[0],[-1],[0]])
+    q3 = np.array([[.0818],[-.4268],[1.3244]])
+    bottom3 = np.dot(-skew(a3),q3)
+    S3 = np.zeros((6,1))
+    S3[:3] = np.copy(a3)
+    S3[3:] = np.copy(bottom3)
+    
+    a4 = np.array([[1],[0],[0]])
+    q4 = np.array([[.0818],[-.6892],[1.2554]])
+    bottom4 = np.dot(-skew(a4),q4)
+    S4 = np.zeros((6,1))
+    S4[:3] = np.copy(a4)
+    S4[3:] = np.copy(bottom4)
+    
+    a5 = np.array([[0],[-1],[0]])
+    q5 = np.array([[.0818],[-.7928],[1.2554]])
+    bottom5 = np.dot(-skew(a5),q5)
+    S5 = np.zeros((6,1))
+    S5[:3] = np.copy(a5)
+    S5[3:] = np.copy(bottom5)
+    
+    a6 = np.array([[1],[0],[0]])
+    q6 = np.array([[.0818],[-1.0635],[1.2454]])
+    bottom6 = np.dot(-skew(a6),q6)
+    S6 = np.zeros((6,1))
+    S6[:3] = np.copy(a6)
+    S6[3:] = np.copy(bottom6)
+    
+    a7 = np.array([[0],[-1],[0]])
+    q7 = np.array([[.0818],[-1.1795],[1.2454]])
+    bottom7 = np.dot(-skew(a7),q7)
+    S7 = np.zeros((6,1))
+    S7[:3] = np.copy(a7)
+    S7[3:] = np.copy(bottom7)
+    
+    s = np.zeros((6,thetaRight.size))
+    s[:,0] = S0.reshape((6))
+    s[:,1] = S1.reshape((6))
+    s[:,2] = S2.reshape((6))
+    s[:,3] = S3.reshape((6))
+    s[:,4] = S4.reshape((6))
+    s[:,5] = S5.reshape((6))
+    s[:,6] = S6.reshape((6))
+    s[:,7] = S7.reshape((6))
+    
+    
+    finalRight = TtoM(thetaRight,s,MR )
+    return finalRight
 
 
 # Close all open connections (just in case)
@@ -301,8 +298,15 @@ vrep.simxSetJointTargetPosition(clientID, rightArm[0], math.radians(45), vrep.si
 vrep.simxSetJointTargetPosition(clientID, leftArm[0], math.radians(-45), vrep.simx_opmode_oneshot)
 vrep.simxSetJointTargetPosition(clientID, monitorJoint, 0, vrep.simx_opmode_oneshot)
 for i in range(1,7):
-    vrep.simxSetJointTargetPosition(clientID, rightArm[i], math.radians(10), vrep.simx_opmode_oneshot)
-    vrep.simxSetJointTargetPosition(clientID, leftArm[i], math.radians(-10), vrep.simx_opmode_oneshot)
+    vrep.simxSetJointTargetPosition(clientID, rightArm[i], math.radians(20), vrep.simx_opmode_oneshot)
+    vrep.simxSetJointTargetPosition(clientID, leftArm[i], math.radians(-20), vrep.simx_opmode_oneshot)
+vrep.simxSetJointTargetPosition(clientID, leftArm[3], math.radians(25), vrep.simx_opmode_oneshot)
+l=-20
+lpose = leftArmPose(0,-45,l,l,25,l,l,l)
+print(repr(lpose))
+r=20
+rpose = rightArmPose(0,45,r,r,r,r,r,r)
+#print(repr(rpose))
 # =============================================================================
 # vrep.simxSetJointTargetPosition(clientID, leftArm[2], math.radians(-20), vrep.simx_opmode_oneshot)
 # vrep.simxSetJointTargetPosition(clientID, rightArm[i], math.radians(-20), vrep.simx_opmode_oneshot)
