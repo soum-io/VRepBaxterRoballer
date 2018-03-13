@@ -14,7 +14,7 @@ import math
 import numpy as np
 
 
-def moveObj(T, clientID, objHandle, bodyJoints):    
+def moveObj(T, clientID, objHandle):    
     R = T[0:3, 0:3]
     p = T[0:3, 3]
     

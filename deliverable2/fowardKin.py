@@ -74,6 +74,29 @@ def TtoM(theta, s,M):
         T = T.dot(sl.expm(vskew(s[:,i])*theta[i,0]))
     return T.dot(M)
 
+def moveObj(T, clientID, objHandle):    
+    R = T[0:3, 0:3]
+    p = T[0:3, 3]
+    
+    sy = math.sqrt(R[0,0] * R[0,0] +  R[1,0] * R[1,0])
+     
+    singular = sy < 1e-6
+    x = 0
+    y = 0
+    z = 0
+    if  not singular :
+        x = math.atan2(R[2,1] , R[2,2])
+        y = math.atan2(-R[2,0], sy)
+        z = math.atan2(R[1,0], R[0,0])
+    else :
+        x = math.atan2(-R[1,2], R[1,1])
+        y = math.atan2(-R[2,0], sy)
+        z = 0
+    E = np.array([x, y, z])
+    
+    vrep.simxSetObjectPosition(clientID, objHandle, -1, p, vrep.simx_opmode_streaming)
+    vrep.simxSetObjectOrientation(clientID, objHandle, -1, E, vrep.simx_opmode_oneshot)
+
 def leftArmPose(t1,t2,t3,t4,t5,t6,t7,t8):
     #left arm (facing towards baxter)
     thetaLeft = np.array([[math.radians(t1)], [math.radians(t2)], [math.radians(t3)], [math.radians(t4)], [math.radians(t5)], [math.radians(t6)], [math.radians(t7)], [math.radians(t8)]])
@@ -294,18 +317,111 @@ time.sleep(2)
 
 # starting position
 print('Moving to Initial Position')
+objHandleLeftTheoretical = int(vrep.simxGetObjectHandle(clientID, 'ReferenceFrame', vrep.simx_opmode_blocking)[1])
+objHandleRightTheoretical = int(vrep.simxGetObjectHandle(clientID, 'ReferenceFrame0', vrep.simx_opmode_blocking)[1])
+
+#zero position
+r=0
+rpose = rightArmPose(0,r,r,r,r,r,r,r)   
+l=0
+lpose = leftArmPose(0,l,l,l,l,l,l,l)
+
+moveObj(rpose, clientID, objHandleRightTheoretical)
+moveObj(lpose, clientID, objHandleLeftTheoretical)
+
+for i in range(0,7):
+    vrep.simxSetJointTargetPosition(clientID, rightArm[i], math.radians(r), vrep.simx_opmode_oneshot)
+    vrep.simxSetJointTargetPosition(clientID, leftArm[i], math.radians(l), vrep.simx_opmode_oneshot)
+    
+time.sleep(3)
+
+
+#first position
+r=0
+rpose = rightArmPose(0,-45,r,r,r,r,r,r)  
+l=0
+lpose = leftArmPose(0,45,l,l,l,l,l,l)
+
+moveObj(rpose, clientID, objHandleRightTheoretical)
+moveObj(lpose, clientID, objHandleLeftTheoretical)
+
+time.sleep(3)
+
+vrep.simxSetJointTargetPosition(clientID, rightArm[0], math.radians(-45), vrep.simx_opmode_oneshot)
+vrep.simxSetJointTargetPosition(clientID, leftArm[0], math.radians(45), vrep.simx_opmode_oneshot)
+for i in range(1,7):
+    vrep.simxSetJointTargetPosition(clientID, rightArm[i], math.radians(r), vrep.simx_opmode_oneshot)
+    vrep.simxSetJointTargetPosition(clientID, leftArm[i], math.radians(l), vrep.simx_opmode_oneshot)
+    
+time.sleep(3)
+    
+#second position
+r=0
+rpose = rightArmPose(0,45,r,r,r,r,r,r)  
+l=0
+lpose = leftArmPose(0,-45,l,l,l,l,l,l)
+
+moveObj(rpose, clientID, objHandleRightTheoretical)
+moveObj(lpose, clientID, objHandleLeftTheoretical)
+
+time.sleep(3)
+
 vrep.simxSetJointTargetPosition(clientID, rightArm[0], math.radians(45), vrep.simx_opmode_oneshot)
 vrep.simxSetJointTargetPosition(clientID, leftArm[0], math.radians(-45), vrep.simx_opmode_oneshot)
-vrep.simxSetJointTargetPosition(clientID, monitorJoint, 0, vrep.simx_opmode_oneshot)
 for i in range(1,7):
-    vrep.simxSetJointTargetPosition(clientID, rightArm[i], math.radians(20), vrep.simx_opmode_oneshot)
-    vrep.simxSetJointTargetPosition(clientID, leftArm[i], math.radians(-20), vrep.simx_opmode_oneshot)
-vrep.simxSetJointTargetPosition(clientID, leftArm[3], math.radians(25), vrep.simx_opmode_oneshot)
-l=-20
-lpose = leftArmPose(0,-45,l,l,25,l,l,l)
-print(repr(lpose))
-r=20
-rpose = rightArmPose(0,45,r,r,r,r,r,r)
+    vrep.simxSetJointTargetPosition(clientID, rightArm[i], math.radians(r), vrep.simx_opmode_oneshot)
+    vrep.simxSetJointTargetPosition(clientID, leftArm[i], math.radians(l), vrep.simx_opmode_oneshot)
+
+time.sleep(3)
+
+#third position
+r=0
+rpose = rightArmPose(0,45,-20,r,r,r,r,r)  
+l=0
+lpose = leftArmPose(0,-45,20,l,l,l,l,l)
+
+moveObj(rpose, clientID, objHandleRightTheoretical)
+moveObj(lpose, clientID, objHandleLeftTheoretical)
+
+time.sleep(3)
+
+vrep.simxSetJointTargetPosition(clientID, rightArm[0], math.radians(45), vrep.simx_opmode_oneshot)
+vrep.simxSetJointTargetPosition(clientID, leftArm[0], math.radians(-45), vrep.simx_opmode_oneshot)
+for i in range(2,7):
+    vrep.simxSetJointTargetPosition(clientID, rightArm[i], math.radians(r), vrep.simx_opmode_oneshot)
+    vrep.simxSetJointTargetPosition(clientID, leftArm[i], math.radians(l), vrep.simx_opmode_oneshot)
+vrep.simxSetJointTargetPosition(clientID, rightArm[1], math.radians(-20), vrep.simx_opmode_oneshot)
+vrep.simxSetJointTargetPosition(clientID, leftArm[1], math.radians(20), vrep.simx_opmode_oneshot)
+
+time.sleep(3)
+
+#fourth position
+r=0
+rpose = rightArmPose(0,45,-20,-35,r,r,r,r)  
+l=0
+lpose = leftArmPose(0,-45,20,35,l,l,l,l)
+
+moveObj(rpose, clientID, objHandleRightTheoretical)
+moveObj(lpose, clientID, objHandleLeftTheoretical)
+
+time.sleep(3)
+
+vrep.simxSetJointTargetPosition(clientID, rightArm[0], math.radians(45), vrep.simx_opmode_oneshot)
+vrep.simxSetJointTargetPosition(clientID, leftArm[0], math.radians(-45), vrep.simx_opmode_oneshot)
+for i in range(3,7):
+    vrep.simxSetJointTargetPosition(clientID, rightArm[i], math.radians(r), vrep.simx_opmode_oneshot)
+    vrep.simxSetJointTargetPosition(clientID, leftArm[i], math.radians(l), vrep.simx_opmode_oneshot)
+vrep.simxSetJointTargetPosition(clientID, rightArm[1], math.radians(-20), vrep.simx_opmode_oneshot)
+vrep.simxSetJointTargetPosition(clientID, leftArm[1], math.radians(20), vrep.simx_opmode_oneshot)
+vrep.simxSetJointTargetPosition(clientID, rightArm[2], math.radians(-35), vrep.simx_opmode_oneshot)
+vrep.simxSetJointTargetPosition(clientID, leftArm[2], math.radians(35), vrep.simx_opmode_oneshot)
+
+time.sleep(3)
+
+    
+
+time.sleep(15)
+
 #print(repr(rpose))
 # =============================================================================
 # vrep.simxSetJointTargetPosition(clientID, leftArm[2], math.radians(-20), vrep.simx_opmode_oneshot)
@@ -314,7 +430,7 @@ rpose = rightArmPose(0,45,r,r,r,r,r,r)
 
 #vrep.simxSetJointTargetPosition(clientID, leftArm[0], math.radians(90), vrep.simx_opmode_oneshot)
 #vrep.simxSetJointTargetPosition(clientID, rightArm[1], math.radians(45), vrep.simx_opmode_oneshot)
-time.sleep(500)
+#time.sleep(10)
 # =============================================================================
 # for i in range(1,7):
 #     if(i==1):

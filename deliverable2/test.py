@@ -18,7 +18,7 @@ vrep.simxStartSimulation(clientID, vrep.simx_opmode_oneshot)
 
 objHandle = int(vrep.simxGetObjectHandle(clientID, 'ReferenceFrame', vrep.simx_opmode_blocking)[1])
 T = np.array([[1, 0, 0, .5], [0, 1, 0, .5], [0, 0, 1, .5], [0, 0, 0, 1]])
-moveObj(T, clientID, objHandle, bodyJoints)
+moveObj(T, clientID, objHandle)
 
 time.sleep(10)
 # Stop simulation
