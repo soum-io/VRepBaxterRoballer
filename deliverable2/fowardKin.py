@@ -12,18 +12,13 @@ def skew(x):
     return np.array([[0, -x[2], x[1]],
                      [x[2], 0, -x[0]],
                      [-x[1], x[0], 0]])
-
 def dskew(x):
     return np.array[[x[2][1]],[x[0][2]],[x[1][0]]]
-    
-    
 def vskew(x):
     return np.array([[0,-x[2],x[1],x[3]],
                      [x[2],0,-x[0],x[4]],
                      [-x[1],x[0],0,x[5]],
-                     [0,0,0,0]])
-    
-    
+                     [0,0,0,0]])  
 def dvskew(x):
     return np.array([[x[2][1]],
                     [x[0][2]],
@@ -74,24 +69,30 @@ def TtoM(theta, s,M):
         T = T.dot(sl.expm(vskew(s[:,i])*theta[i,0]))
     return T.dot(M)
 
+def td(J, V):
+    return nl.inv(np.transpose(J)@J+.1*np.identity(J.shape[1]))@np.transpose(J)@V
+
+
 def moveObj(T, clientID, objHandle):    
     R = T[0:3, 0:3]
     p = T[0:3, 3]
-    
-    sy = math.sqrt(R[0,0] * R[0,0] +  R[1,0] * R[1,0])
-     
-    singular = sy < 1e-6
-    x = 0
-    y = 0
-    z = 0
-    if  not singular :
-        x = math.atan2(R[2,1] , R[2,2])
-        y = math.atan2(-R[2,0], sy)
-        z = math.atan2(R[1,0], R[0,0])
-    else :
-        x = math.atan2(-R[1,2], R[1,1])
-        y = math.atan2(-R[2,0], sy)
-        z = 0
+    cy_thresh = 0
+    _FLOAT_EPS_4 = np.finfo(float).eps * 4.0
+    try:
+        cy_thresh = np.finfo(R.dtype).eps * 4
+    except ValueError:
+        cy_thresh = _FLOAT_EPS_4 
+    r11, r12, r13, r21, r22, r23, r31, r32, r33 = R.flat
+    cy = math.sqrt(r33*r33 + r23*r23)
+    if cy > cy_thresh: # cos(y) not close to zero, standard form
+        z = math.atan2(-r12,  r11) # atan2(cos(y)*sin(z), cos(y)*cos(z))
+        y = math.atan2(r13,  cy) # atan2(sin(y), cy)
+        x = math.atan2(-r23, r33) # atan2(cos(y)*sin(x), cos(x)*cos(y))
+    else: # cos(y) (close to) zero, so x -> 0.0 (see above)
+        # so r21 -> sin(z), r22 -> cos(z) and
+        z = math.atan2(r21,  r22)
+        y = math.atan2(r13,  cy) # atan2(sin(y), cy)
+        x = 0.0
     E = np.array([x, y, z])
     
     vrep.simxSetObjectPosition(clientID, objHandle, -1, p, vrep.simx_opmode_streaming)
@@ -357,9 +358,10 @@ time.sleep(3)
     
 #second position
 r=0
-rpose = rightArmPose(0,45,r,r,r,r,r,r)  
+rpose = rightArmPose(0,45,r,r,r,r,r,r)
 l=0
 lpose = leftArmPose(0,-45,l,l,l,l,l,l)
+print(repr(lpose))  
 
 moveObj(rpose, clientID, objHandleRightTheoretical)
 moveObj(lpose, clientID, objHandleLeftTheoretical)
