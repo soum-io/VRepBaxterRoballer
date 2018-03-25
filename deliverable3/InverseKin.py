@@ -70,8 +70,8 @@ def TtoM(theta, s,M):
         T = T.dot(sl.expm(vskew(s[:,i])*theta[i,0]))
     return T.dot(M)
 
-def td(J, V):
-    return nl.inv(np.transpose(J)@J+.1*np.identity(J.shape[1]))@np.transpose(J)@V
+def td(J, V, theta):
+    return nl.inv(np.transpose(J)@J+.1*np.identity(J.shape[1]))@np.transpose(J)@V-(np.identity(J.shape[1]) - nl.pinv(J)@J)@theta
 
 
 def moveObj(T, clientID, objHandle):    
@@ -512,7 +512,7 @@ def invLeftArm(xl, yl, zl):
         
     SL = leftArmS()
     thetaL = np.zeros((SL.shape[1],1))
-    thetadot = np.array([])
+    thetadot = np.array([100])
     
     TL_1in0 = ML
     J = Jmaker(thetaL,SL)
@@ -520,8 +520,8 @@ def invLeftArm(xl, yl, zl):
     V = nl.inv(admaker(TL_1in0))@V0
     while(True):
         count = 0
-        while nl.norm(V) >=.01:
-            thetadot = td(J,V0)
+        while nl.norm(V) >=.01 and nl.norm(thetadot) >= .0001:
+            thetadot = td(J,V0, thetaL)
             thetaL = thetaL + thetadot*1
             TL_1in0 = TtoM(thetaL,SL,ML)
             J = Jmaker(thetaL, SL)
@@ -531,7 +531,7 @@ def invLeftArm(xl, yl, zl):
             if(count == 60):
                 print("trying again")
                 thetaL = np.array([[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)]])
-                thetadot = np.array([])
+                thetadot = np.array([100])
                 TL_1in0 = TtoM(thetaL,SL,ML)
                 J = Jmaker(thetaL,SL)
                 V0 = dvskew(sl.logm(T_2in0.dot(nl.inv(TL_1in0))))
@@ -552,7 +552,7 @@ def invLeftArm(xl, yl, zl):
                 #checking final pose, in case any obsticles got in the way (even though joint angles were okay.)
                 print("Difference: " + str(nl.norm(T_2in0[:3,3]-np.array(leftEndTip))))
                 thetaL = np.array([[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)]])
-                thetadot = np.array([])
+                thetadot = np.array([100])
                 TL_1in0 = TtoM(thetaL,SL,ML)
                 J = Jmaker(thetaL,SL)
                 V0 = dvskew(sl.logm(T_2in0.dot(nl.inv(TL_1in0))))
@@ -563,7 +563,7 @@ def invLeftArm(xl, yl, zl):
         else:
             #try different starting orientation to get different end angles that will hopefully meet the angle limits of the joints
             thetaL = np.array([[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)]])
-            thetadot = np.array([])
+            thetadot = np.array([100])
             TL_1in0 = TtoM(thetaL,SL,ML)
             J = Jmaker(thetaL,SL)
             V0 = dvskew(sl.logm(T_2in0.dot(nl.inv(TL_1in0))))
@@ -592,7 +592,7 @@ def invRightArm(xr, yr, zr):
         
     SR = rightArmS()
     thetaR = np.zeros((SR.shape[1],1))
-    thetadot = np.array([])
+    thetadot = np.array([100])
     
     TR_1in0 = MR
     J = Jmaker(thetaR,SR)
@@ -600,8 +600,8 @@ def invRightArm(xr, yr, zr):
     V = nl.inv(admaker(TR_1in0))@V0
     while(True):
         count = 0
-        while nl.norm(V) >=.01:
-            thetadot = td(J,V0)
+        while nl.norm(V) >=.01 and nl.norm(thetadot) >= .0001:
+            thetadot = td(J,V0, thetaR)
             thetaR = thetaR + thetadot*1
             TR_1in0 = TtoM(thetaR,SR,MR)
             J = Jmaker(thetaR, SR)
@@ -611,7 +611,7 @@ def invRightArm(xr, yr, zr):
             if(count == 60):
                 print("trying again")
                 thetaR = np.array([[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)]])
-                thetadot = np.array([])
+                thetadot = np.array([100])
                 TR_1in0 = TtoM(thetaR,SR,MR)
                 J = Jmaker(thetaR,SR)
                 V0 = dvskew(sl.logm(T_2in0.dot(nl.inv(TR_1in0))))
@@ -631,7 +631,7 @@ def invRightArm(xr, yr, zr):
                 #checking final pose, in case any obsticles got in the way (even though joint angles were okay.)
                 print("Difference: " + str(nl.norm(T_2in0[:3,3]-np.array(leftEndTip))))
                 thetaR = np.array([[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)]])
-                thetadot = np.array([])
+                thetadot = np.array([100])
                 TR_1in0 = TtoM(thetaR,SR,MR)
                 J = Jmaker(thetaR,SR)
                 V0 = dvskew(sl.logm(T_2in0.dot(nl.inv(TR_1in0))))
@@ -642,7 +642,7 @@ def invRightArm(xr, yr, zr):
         else:
             #try different starting orientation to get different end angles 
             thetaR = np.array([[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)]])
-            thetadot = np.array([])
+            thetadot = np.array([100])
             TR_1in0 = TtoM(thetaR,SR,MR)
             J = Jmaker(thetaR,SR)
             V0 = dvskew(sl.logm(T_2in0.dot(nl.inv(TR_1in0))))
