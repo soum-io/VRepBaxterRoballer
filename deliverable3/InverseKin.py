@@ -519,6 +519,7 @@ def invLeftArm(xl, yl, zl):
     V0 = dvskew(sl.logm(T_2in0.dot(nl.inv(TL_1in0))))
     V = nl.inv(admaker(TL_1in0))@V0
     while(True):
+        failCount = 0;
         count = 0
         while nl.norm(V) >=.01 and nl.norm(thetadot) >= .0001:
             thetadot = td(J,V0, thetaL)
@@ -537,6 +538,11 @@ def invLeftArm(xl, yl, zl):
                 V0 = dvskew(sl.logm(T_2in0.dot(nl.inv(TL_1in0))))
                 V = dvskew(sl.logm(T_2in0.dot(nl.inv(TL_1in0))))
                 count = 0
+                #checking for how many times this happens. So we can detect if a position is unreachable
+                failCount = failCount + 1
+                if(failCount >= 7):
+                    print("position unreachable")
+                    return
         print(repr(thetaL))
         #checking if the angles are within limit of their respective joints
         if(check(thetaL, LeftLimits)):
@@ -600,6 +606,7 @@ def invRightArm(xr, yr, zr):
     V = nl.inv(admaker(TR_1in0))@V0
     while(True):
         count = 0
+        failCount = 0
         while nl.norm(V) >=.01 and nl.norm(thetadot) >= .0001:
             thetadot = td(J,V0, thetaR)
             thetaR = thetaR + thetadot*1
@@ -617,6 +624,10 @@ def invRightArm(xr, yr, zr):
                 V0 = dvskew(sl.logm(T_2in0.dot(nl.inv(TR_1in0))))
                 V = dvskew(sl.logm(T_2in0.dot(nl.inv(TR_1in0))))
                 count = 0
+                failCount = failCount + 1
+                if(failCount >= 7):
+                    print("position unreachable")
+                    return
         print(repr(thetaR))
         #checking if the angles are within limit of their respective joints
         if(check(thetaR, rightLimits)):
