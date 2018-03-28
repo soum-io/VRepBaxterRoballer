@@ -671,6 +671,7 @@ yr = float(input("Enter the right arm y coordinate: "))
 zr = float(input("Enter the right arm z coordinate: "))
 invRightArm(xr,yr,zr)
 
+input("Press Enter to end the simulation.")
 # Stop simulation
 vrep.simxStopSimulation(clientID, vrep.simx_opmode_oneshot)
 
