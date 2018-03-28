@@ -16,7 +16,7 @@ This document is meant to explain how to obtain the results that are displayed i
 1. The inverse kinematics are implemented in _InverseKin.py_.
 2. _InverseKin.py_ implements most of the code from the [previous deliverable](https://github.com/smike1210/VRepBaxterRoballer/tree/master/deliverable2) to obtain the screw axis' for both of Baxter's arms. It then uses that information to arrive at a set of thetas to reach a desired ending position by constantly updating \grave{\theta} using the formula (J<sup>T</sup>J-.1I)<sup>-1</sup>J^<sup>T</sup>V.
 3. When run, the program asks the user to enter the coordinates for the left arm to go to. It then goes through the algorithm described above to come up with a set of thetas for all of Baxter's seven left arm revolute joints and the main central rotation joint. The code checks that the thetas are all within the working limits of each joint, or if not, starts the algorithm over again. It also detects for bad inputs (e.g. location the arm cannot reach), and will notify the user when this happens. It will move to the calculated thetas when those test are passed. The code then repeats for the right arm as well.
-## How to reproduce what is shown in the video
+## How to Reproduce What is Shown in the Video
 1. First, [download _V-Rep_.](http://www.coppeliarobotics.com/) This guide assumes you will download the x64 _Windows 10_ version of _V-Rep_.
 2. After the download is complete, open the _V-REP_PRO_EDU_version number_Setup.exe_ file and go through the instructions to install the program on your machine.
 3. Once the program is fully installed, open _V-Rep_. When you first open it, it should look like [this](https://preview.ibb.co/cfZzNn/First_Time_Opening_VRep.png).
