@@ -319,7 +319,6 @@ vrep.simxStartSimulation(clientID, vrep.simx_opmode_oneshot)
 # starting position
 print('Moving to Initial Position')
 
-
 r=0
 rpose = rightArmPose(0,r,r,r,r,r,r,r)[0] 
 l=0
@@ -330,6 +329,7 @@ for i in range(0,7):
 
 
 #TODO: create an array of 30 positions from theta
+
 '''
 t1 = np.radians(10)
 t2 = np.radians(25)
