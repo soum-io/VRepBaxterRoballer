@@ -6,8 +6,6 @@ import math
 from math import factorial
 import vrep
 import time
-#TODO: make this import work so we don't have to define the functions in each file
-#from forwardKin import *
 
 def skew(x):
     return np.array([[0, -x[2], x[1]],
@@ -264,17 +262,15 @@ def rightArmPose(t1,t2,t3,t4,t5,t6,t7,t8):
 
 def collDetect(theta, radius, arm, clientID):
     # parameters for the function collDetect:
-    # theta - array with desired angular configurations as columns
+    # theta - array with single orientation as columns
     # radius - array of radii of bounding volume spheres attached to the joints 
     # arm - 'left' or 'right'
     # clientID - for VRep
     
+    # a flag that is valued 1 if there are any collisions in the given orientation
+    collFlag = 0
     # get useful numbers for later
     numJoints = np.shape(theta)[0]
-    numOrientations = np.shape(theta)[1]
-    
-    # for each orientation, collision will show 0 if no collision occurs and 1 if a collision occurs
-    collision = np.zeros((numOrientations, 1))
     
     # get the initial positions of the joints and the screw axes for later calculations
     if arm.lower() == 'left':
@@ -293,86 +289,58 @@ def collDetect(theta, radius, arm, clientID):
     z = np.ones((1, numJoints))
     pAugInit = np.vstack((pInit, z))
     
-    for k in range(0, numOrientations):
-        thetaLocal = theta[:,k]
-        pAugFinal = np.ones(np.shape(pAugInit))
-        
-        # the first two spheres are not moved by any joints
-        pAugFinal[:,0] = pAugInit[:,0]
-        pAugFinal[:,1] = pAugInit[:,1]
-        
-        T = 1
-        for i in range(2, numJoints):
-            transform = sl.expm(vskew(S[:,i])*thetaLocal[i])
-            T = T*transform
-            pAugFinal[:,i] = np.dot(T, pAugInit[:, i])
-            
-        # now we have the centers of the spheres at the position described by theta
-        pFinal = pAugFinal[0:3, :]
-        
-        # move dummy objects in the scene to represent the bounding volumes
-        for i in range(0, numJoints):
-            objName = 'Dummy' + str(i)
-            print(objName)
-            objHandle = vrep.simxGetObjectHandle(clientID, objName, vrep.simx_opmode_blocking)[1]
-            
-            # the position of the dummy object
-            pDummy = pFinal[:,i]
-            print(pDummy)
-            vrep.simxSetObjectPosition(clientID, objHandle, -1, pDummy, vrep.simx_opmode_oneshot)
-            
-        # check collision between all the bounding volumes (except with itself)
-        for i in range(0, numJoints):
-            for j in range(0, numJoints):
-                if (i==j):
-                    pass
-                else:
-                    x1 = nl.norm(pFinal[:,i] - pFinal[:,j])
-                    x2 = radius[i] + radius[j]
-                    
-                    if (x1 <= x2):
-                        # a collision occured somewhere
-                        collision[k] = 1
-                        
-                    else:
-                        # no collisions occurred
-                        pass
+    thetaLocal = theta[:,0]
+    pAugFinal = np.ones(np.shape(pAugInit))
     
-    return collision
+    # the first two spheres are not moved by any joints
+    pAugFinal[:,0] = pAugInit[:,0]
+    pAugFinal[:,1] = pAugInit[:,1]
+    
+    T = 1
+    for i in range(2, numJoints):
+        transform = sl.expm(vskew(S[:,i])*thetaLocal[i])
+        T = T*transform
+        pAugFinal[:,i] = np.dot(T, pAugInit[:, i])
+        
+    # now we have the centers of the spheres at the position described by theta
+    pFinal = pAugFinal[0:3, :]
+    
+        
+    # check collision between all the bounding volumes (except with itself)
+    for i in range(0, numJoints):
+        for j in range(0, numJoints):
+            if (i==j):
+                pass
+            else:
+                # check self collision
+                x1 = nl.norm(pFinal[:,i] - pFinal[:,j])
+                x2 = radius[i] + radius[j]
+                
+                # check collision for object in the scene
+                # sphere of radius 1 and position [0, -1.3, .5]
+                pObstacle = np.array((0, -1.3, .5))
+                rObstacle = 1
+                x3 = nl.norm(pFinal[:,i] - pObstacle)
+                x4 = radius[i] - rObstacle
+                
+                
+                if (x1 <= x2):
+                    # a self-collision occured somewhere
+                    print('self collision')
+                    collFlag = 1
+                elif (x3 <= x4):
+                    # a collision with an obstacle in the environment occurred
+                    print('obstacle collision')
+                    collFlag = 2
+                else:
+                    # no collisions occurred
+                    pass
+
+    return collFlag, pFinal
 
 ####################################################################
 ####################################################################
 # here's the main part of the function
-
-
-#TODO: create an array of 30 positions using theta
-t1 = np.radians(10)
-theta1 = np.array([0,0,0,t1,0,t1,25,0])
-t2 = np.radians(20)
-theta2 = np.array([0,0,0,t2,0,t2,100,100])
-theta = np.array((theta1, theta2))
-theta = np.transpose(theta)
-
-# these radii are realistically chosen to fit the Baxter robot
-(r0, r1, r2, r3, r4,r5, r6, r7) = (.7, .2, .2, .1, .15, .15, .15, .1)
-radius = np.array((r0, r1, r2, r3, r4,r5, r6, r7))
-
-arm = 'right'
-
-# Close all open connections (just in case)
-vrep.simxFinish(-1)
-
-
-# open comms with Vrep simulator
-clientID = vrep.simxStart('127.0.0.1', 19997, True, True, 5000, 5)
-if clientID == -1:
-    raise Exception('Failed connecting to remote API server')
-
-c = collDetect(theta, radius, arm, clientID)
-
-# Close the connection to V-REP
-vrep.simxFinish(clientID)
-
 # Close all open connections (just in case)
 vrep.simxFinish(-1)
 
@@ -380,12 +348,6 @@ vrep.simxFinish(-1)
 clientID = vrep.simxStart('127.0.0.1', 19997, True, True, 5000, 5)
 if clientID == -1:
     raise Exception('Failed connecting to remote API server')
-'''
-# Get "handle" to the first joint of robot
-result, joint_one_handle = vrep.simxGetObjectHandle(clientID, 'UR3_joint1', vrep.simx_opmode_blocking)
-if result != vrep.simx_return_ok:
-    raise Exception('could not get object handle for first joint')
-'''
 
 ## define Baxter's joints
 # define the body joints
@@ -426,23 +388,84 @@ rightError = rightError.astype(int)
 leftArm = leftArm.astype(int)
 leftError = leftError.astype(int)
 
-
 # starting position
 print('Moving to Initial Position')
-
-#zero position
-r=0
-rpose = rightArmPose(0,r,r,r,r,r,r,r)   
-l=0
-lpose = leftArmPose(0,l,l,l,l,l,l,l)
-
-for i in range(0,7):
-    vrep.simxSetJointTargetPosition(clientID, rightArm[i], math.radians(r), vrep.simx_opmode_oneshot)
-    vrep.simxSetJointTargetPosition(clientID, leftArm[i], math.radians(l), vrep.simx_opmode_oneshot)
+for i in range(0, 7):
+    vrep.simxSetJointPosition(clientID, rightArm[i], math.radians(0), vrep.simx_opmode_oneshot)
+    vrep.simxSetJointPosition(clientID, leftArm[i], math.radians(0), vrep.simx_opmode_oneshot)
     
-time.sleep(3)
+# these radii are realistically chosen to fit the Baxter robot
+#(r0, r1, r2, r3, r4,r5, r6, r7) = (.7, .2, .2, .1, .15, .15, .15, .1)
+(r0, r1, r2, r3, r4,r5, r6, r7) = (.1, .1, .1, .1, .1, .1, .1, .1)
+
+radius = np.array((r0, r1, r2, r3, r4,r5, r6, r7))
+
+arm = 'right'
+'''
+# robot parameters
+numJoints = 8
+numOrientations = 30
+
+theta = np.zeros((numJoints, numOrientations))
+theta[0, :] = 0
+# the collisions with the sphere
+theta[1, 0:10] = np.linspace(10, 40, 10, endpoint=True)
+
+# the collisions with nothing
+theta[1, 10:20] = np.linspace(0, -40, 10, endpoint=True)
+
+# the self collisions
+theta[1, 20:30] = 90
+theta[3, 20:30] = np.linspace(90, 110, 10, endpoint=True)
+'''
+# robot parameters for debugging
+numJoints = 8
+numOrientations = 5
+
+theta = np.zeros((numJoints, numOrientations))
+theta[0, :] = 0
+# the collisions with the sphere
+theta[1, :] = np.linspace(10, 40, numOrientations, endpoint=True)
 
 
+collision = np.zeros((numOrientations))
+
+# the part that moves the robot and the dummy variables
+for i in range(0,np.shape(theta)[1]):
+    print('orientation ' + str(i) + '\n')
+    vector = np.reshape(theta[:,i], (8, 1))
+    
+    thetaLocal = vector
+    c, pFinal = collDetect(thetaLocal, radius, arm, clientID)[0], collDetect(thetaLocal, radius, arm, clientID)[1]
+    collision[i] = c
+    
+    # move the stuff
+    for j in range(0,7):
+        # move the robot arm joints one by one
+        angle = thetaLocal[j]
+        vrep.simxSetJointPosition(clientID, rightArm[j], math.radians(angle), vrep.simx_opmode_oneshot)
+                
+        # move the dummy objects one by one at the same time as the robot arm joint they represent
+        objName = 'Dummy' + str(j)
+        objHandle = vrep.simxGetObjectHandle(clientID, objName, vrep.simx_opmode_blocking)[1]
+        
+        # the position of the dummy object
+        pDummy = pFinal[:,j].tolist()
+        
+        pActual = vrep.simxGetObjectPosition(clientID, objHandle, -1, vrep.simx_opmode_blocking)[1]
+        print('the position we want')
+        print(pDummy)
+        print('the position we are at')
+        print(pActual)
+        time.sleep(3)
+        
+        vrep.simxSetObjectPosition(clientID, objHandle, -1, pDummy, vrep.simx_opmode_blocking)
+        #time.sleep(.5)
+
+    time.sleep(3)
+
+#for i in range(0,7):
+    
 # Before closing the connection to V-REP, make sure that the last command sent out had time to arrive. You can guarantee this with (for example):
 vrep.simxGetPingTime(clientID)
 
