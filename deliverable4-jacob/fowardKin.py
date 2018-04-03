@@ -72,7 +72,6 @@ def TtoM(theta, s,M):
 def td(J, V):
     return nl.inv(np.transpose(J)@J+.1*np.identity(J.shape[1]))@np.transpose(J)@V
 
-
 def moveObj(T, clientID, objHandle):    
     R = T[0:3, 0:3]
     p = T[0:3, 3]
@@ -176,7 +175,6 @@ def leftArmPose(t1,t2,t3,t4,t5,t6,t7,t8):
     finalLeft = TtoM(thetaLeft,s,ML )
     return finalLeft, s, ML, thetaLeft
 
-
 def rightArmPose(t1,t2,t3,t4,t5,t6,t7,t8):
     #right arm
     thetaRight= np.array([[math.radians(t1)], [math.radians(t2)], [math.radians(t3)], [math.radians(t4)], [math.radians(t5)], [math.radians(t6)], [math.radians(t7)], [math.radians(t8)]])
@@ -252,9 +250,8 @@ def rightArmPose(t1,t2,t3,t4,t5,t6,t7,t8):
     s[:,7] = S7.reshape((6))
     
     
-    finalRight = TtoM(thetaRight,s,MR )
+    finalRight = TtoM(thetaRight,s,MR)
     return finalRight, s, MR, thetaRight
-
 
 # Close all open connections (just in case)
 vrep.simxFinish(-1)
@@ -263,12 +260,6 @@ vrep.simxFinish(-1)
 clientID = vrep.simxStart('127.0.0.1', 19997, True, True, 5000, 5)
 if clientID == -1:
     raise Exception('Failed connecting to remote API server')
-'''
-# Get "handle" to the first joint of robot
-result, joint_one_handle = vrep.simxGetObjectHandle(clientID, 'UR3_joint1', vrep.simx_opmode_blocking)
-if result != vrep.simx_return_ok:
-    raise Exception('could not get object handle for first joint')
-'''
 
 ## define Baxter's joints
 # define the body joints
@@ -310,12 +301,6 @@ leftArm = leftArm.astype(int)
 leftError = leftError.astype(int)
 
 
-# Start simulation
-vrep.simxStartSimulation(clientID, vrep.simx_opmode_oneshot)
-
-# Wait two seconds
-#time.sleep(2)
-
 # starting position
 print('Moving to Initial Position')
 
@@ -329,7 +314,6 @@ for i in range(0,7):
 
 
 #TODO: create an array of 30 positions from theta
-
 '''
 t1 = np.radians(10)
 t2 = np.radians(25)
@@ -350,8 +334,6 @@ for i in range(0,7):
 time.sleep(2)
 
 
-# Stop simulation
-vrep.simxStopSimulation(clientID, vrep.simx_opmode_oneshot)
 
 # Before closing the connection to V-REP, make sure that the last command sent out had time to arrive. You can guarantee this with (for example):
 vrep.simxGetPingTime(clientID)
