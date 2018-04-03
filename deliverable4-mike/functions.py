@@ -1,85 +1,4 @@
-import numpy as np
-import scipy as sp
-from numpy import linalg as nl
-from scipy import linalg as sl
-import math
-from math import factorial
-import vrep
-import time
-import random
-    
-
-vrep.simxFinish(-1)
-
-clientID = vrep.simxStart('127.0.0.1', 19997, True, True, 5000, 5)
-if clientID == -1:
-    raise Exception('Failed connecting to remote API server')
-
-## define Baxter's joints
-# define the body joints
-bodyJoints = np.zeros(3)
-bodyError = np.zeros(3)
-vertError, vertJoint = vrep.simxGetObjectHandle(clientID, 'Baxter_verticalJoint', vrep.simx_opmode_blocking)
-rotError, rotJoint = vrep.simxGetObjectHandle(clientID, 'Baxter_rotationJoint', vrep.simx_opmode_blocking)
-monitorError, monitorJoint = vrep.simxGetObjectHandle(clientID, 'Baxter_monitorJoint', vrep.simx_opmode_blocking)
-
-bodyJoints[0]= vertJoint
-bodyError[0] = vertError
-bodyJoints[1]= rotJoint
-bodyError[1] = rotError
-bodyJoints[2]= monitorJoint
-bodyError[2] = monitorError
-bodyJoints = bodyJoints.astype(int)
-bodyError = bodyError.astype(int)
-
-# define the arm joints
-# the number of joints per arm
-num_joints = 7
-i = 0
-rightArm = np.zeros(num_joints)
-rightError = np.zeros(num_joints)
-leftArm = np.zeros(num_joints)
-leftError = np.zeros(num_joints)
-
-for i in range(7):
-    # define the joint names we ask from v-rep
-    rightJointName = 'Baxter_rightArm_joint' + str(i+1)
-    leftJointName = 'Baxter_leftArm_joint' + str(i+1)
-    
-    # get the joint names from v-rep
-    rightError[i], rightArm[i] = vrep.simxGetObjectHandle(clientID, rightJointName, vrep.simx_opmode_blocking)
-    leftError[i], leftArm[i] = vrep.simxGetObjectHandle(clientID, leftJointName, vrep.simx_opmode_blocking)
-rightArm = rightArm.astype(int)
-rightError = rightError.astype(int)
-leftArm = leftArm.astype(int)
-leftError = leftError.astype(int)
-
-ML = np.array([[1,0,0,.0815],
-                  [0,1,0,1.2993],
-                  [0,0,1,1.2454],
-                  [0,0,0,1]])
-MR = np.array([[1,0,0,.0819],
-                  [0,1,0,-1.2929],
-                  [0,0,1,1.2454],
-                  [0,0,0,1]])
-
-objHandleLeftTheoretical = int(vrep.simxGetObjectHandle(clientID, 'ReferenceFrame', vrep.simx_opmode_blocking)[1])
-objHandleRightTheoretical = int(vrep.simxGetObjectHandle(clientID, 'ReferenceFrame0', vrep.simx_opmode_blocking)[1])
-dummyRot = int(vrep.simxGetObjectHandle(clientID, 'DummyRot', vrep.simx_opmode_blocking)[1])
-dummy1L = int(vrep.simxGetObjectHandle(clientID, 'Dummy1L', vrep.simx_opmode_blocking)[1])
-dummy2L = int(vrep.simxGetObjectHandle(clientID, 'Dummy2L', vrep.simx_opmode_blocking)[1])
-dummy3L = int(vrep.simxGetObjectHandle(clientID, 'Dummy3L', vrep.simx_opmode_blocking)[1])
-dummy4L = int(vrep.simxGetObjectHandle(clientID, 'Dummy4L', vrep.simx_opmode_blocking)[1])
-dummy5L = int(vrep.simxGetObjectHandle(clientID, 'Dummy5L', vrep.simx_opmode_blocking)[1])
-dummy6L = int(vrep.simxGetObjectHandle(clientID, 'Dummy6L', vrep.simx_opmode_blocking)[1])
-dummy7L = int(vrep.simxGetObjectHandle(clientID, 'Dummy7L', vrep.simx_opmode_blocking)[1])
-dummyEndL = int(vrep.simxGetObjectHandle(clientID, 'DummyEndL', vrep.simx_opmode_blocking)[1])
-dummyOutside = int(vrep.simxGetObjectHandle(clientID, 'DummyOutside', vrep.simx_opmode_blocking)[1])
-
-leftArmDummies = np.array([dummyRot, dummy1L, dummy2L, dummy3L, dummy4L, dummy5L, dummy6L, dummy7L, dummyEndL])
-
-
-vrep.simxStartSimulation(clientID, vrep.simx_opmode_oneshot)
+from variables import *
 
 def skew(x):
     return np.array([[0, -x[2], x[1]],
@@ -171,9 +90,9 @@ def moveObj(T, clientID, objHandle):
     vrep.simxSetObjectPosition(clientID, objHandle, -1, p, vrep.simx_opmode_streaming)
     vrep.simxSetObjectOrientation(clientID, objHandle, -1, E, vrep.simx_opmode_oneshot)
 
-def leftArmPose(t1,t2,t3,t4,t5,t6,t7,t8):
+def leftArmPose(thetal):
     #left arm (facing towards baxter)
-    thetaLeft = np.array([[math.radians(t1)], [math.radians(t2)], [math.radians(t3)], [math.radians(t4)], [math.radians(t5)], [math.radians(t6)], [math.radians(t7)], [math.radians(t8)]])
+    thetaLeft = np.array([[math.radians(thetal[0])], [math.radians(thetal[1])], [math.radians(thetal[2])], [math.radians(thetal[3])], [math.radians(thetal[4])], [math.radians(thetal[5])], [math.radians(thetal[6])], [math.radians(thetal[7])]])
     ML = np.array([[1,0,0,.0815],
                   [0,1,0,1.2993],
                   [0,0,1,1.2454],
@@ -250,9 +169,9 @@ def leftArmPose(t1,t2,t3,t4,t5,t6,t7,t8):
     return finalLeft
 
 
-def rightArmPose(t1,t2,t3,t4,t5,t6,t7,t8):
+def rightArmPose(thetar):
     #right arm
-    thetaRight= np.array([[math.radians(t1)], [math.radians(t2)], [math.radians(t3)], [math.radians(t4)], [math.radians(t5)], [math.radians(t6)], [math.radians(t7)], [math.radians(t8)]])
+    thetaRight= np.array([[math.radians(thetar[0])], [math.radians(thetar[1])], [math.radians(thetar[2])], [math.radians(thetar[3])], [math.radians(thetar[4])], [math.radians(thetar[5])], [math.radians(thetar[6])], [math.radians(thetar[7])]])
     MR = np.array([[1,0,0,.0818],
                   [0,1,0,-1.2929],
                   [0,0,1,1.2454],
@@ -678,6 +597,12 @@ def moveLeft(thetas):
     vrep.simxSetJointTargetPosition(clientID, rotJoint, math.radians(thetas[0]), vrep.simx_opmode_oneshot) 
     for i in range(0,7):
         vrep.simxSetJointTargetPosition(clientID, leftArm[i], math.radians(thetas[i+1]), vrep.simx_opmode_oneshot) 
+        
+def moveRight(thetas):
+    vrep.simxSetJointTargetPosition(clientID, rotJoint, math.radians(thetas[0]), vrep.simx_opmode_oneshot) 
+    for i in range(0,7):
+        vrep.simxSetJointTargetPosition(clientID, rightArm[i], math.radians(thetas[i+1]), vrep.simx_opmode_oneshot) 
+
 
 def endSim():
     input("Press Enter to end the simulation.")
@@ -722,15 +647,57 @@ def placeLeftJoints(theta):
             startM[2][3] = coords[2][i+1]
         Mt = TtoM(thetal[:i+1].reshape((i+1,1)), S[:,:i+1], startM)
         moveObj(Mt, clientID, leftArmDummies[i+1])
-            
+      
+def placeRightJoints(theta):
+    thetal = np.zeros(theta.size)
+    for i in range(thetal.size):
+        thetal[i] = math.radians(theta[i])
+        
+    S = rightArmS()
+    M = MR
+    coords = np.zeros((3,8))
+    
+    coords[:,0] = np.array([[.0177],[.0032],[.8777]]).reshape((3))
+    coords[:,1] = np.array([[.0818],[-.2558],[1.0540]]).reshape((3))
+    coords[:,2] = np.array([[.0818],[-.3248],[1.3244]]).reshape((3))
+    coords[:,3] = np.array([[.0818],[-.4268],[1.3244]]).reshape((3))
+    coords[:,4] = np.array([[.0818],[-.6892],[1.2554]]).reshape((3))
+    coords[:,5] = np.array([[.0818],[-.7928],[1.2554]]).reshape((3))
+    coords[:,6] = np.array([[.0818],[-1.0635],[1.2454]]).reshape((3))
+    coords[:,7] = np.array([[.0818],[-1.1795],[1.2454]]).reshape((3))
+
+    
+    rotBaseM = np.copy(M)
+    rotBaseM[:3, 3] = np.array([[.0177],[.0032],[.8777]]).reshape((3))
+    moveObj(rotBaseM, clientID, rightArmDummies[0])
+    
+    
+    for i in range(thetal.size):
+        startM = np.copy(M)
+        if(i != S[0].size-1):
+            startM[0][3] = coords[0][i+1]
+            startM[1][3] = coords[1][i+1]
+            startM[2][3] = coords[2][i+1]
+        Mt = TtoM(thetal[:i+1].reshape((i+1,1)), S[:,:i+1], startM)
+        moveObj(Mt, clientID, rightArmDummies[i+1])
                     
-def detectCollisionLeft(theta):
+def detectCollisionLeft(thetal):
+    
+    LeftLimits = [(math.radians(-168), math.radians(-168+336)), (math.radians(-96.5), math.radians(-96.5+191)), (math.radians(-121), math.radians(-121+179)), (math.radians(-173), math.radians(-173+346)), (math.radians(0), math.radians(0+148)), (math.radians(-173.3), math.radians(-173.3+346.5)), (math.radians(-88), math.radians(-88+206)),(math.radians(-173.3), math.radians(-173.3+346.5))]
+    if(check(thetal,LeftLimits)):
+        print("Left: Joint angles out of range")
+        return True
+    
+    theta = np.zeros(thetal.size)
+    for i in range(thetal.size):
+        theta[i] = math.radians(thetal[i])
     col = False
+    
     S = leftArmS()
     M = ML
-    r_robot = np.array([[0,.09,.09,.09,.09,.09,.09,.09,.09,.09]])
+    r_robot = np.array([[0,.2,.05,.05,.05,.05,.05,.05,.05,.05]])
     p_obstacle = np.array([[.95], [-.225], [1]])
-    r_obstacle = np.array([[1.0]])
+    r_obstacle = np.array([[.5]])
     
     coords = np.zeros((3,8))   
     coords[:,0] = np.array([[.0177],[.0032],[.8777]]).reshape((3))
@@ -757,10 +724,9 @@ def detectCollisionLeft(theta):
     
     centers[:,r_robot.size:] = np.copy(p_obstacle)
     
-    #print(centers)
     
     
-    for i in range(S[0].size):
+    for i in range(theta.size):
         startM = np.copy(M)
         if(i != S[0].size-1):
             startM[0][3] = coords[0][i+1]
@@ -771,19 +737,108 @@ def detectCollisionLeft(theta):
         centers[0][i+2] = Mt[0][3]
         centers[1][i+2] = Mt[1][3]
         centers[2][i+2] = Mt[2][3] 
-    for l in range(S[0].size+2):
+    for l in range(9):
         for y in range(l+1,r.size):
             dist = nl.norm(centers[:,l] - centers[:,y])
             #dist = np.sqrt((centers[0][l] - centers[0][y])**2 + (centers[1][l] - centers[1][y])**2 + (centers[2][l] - centers[2][y])**2)
             if dist < r[0][l]+r[0][y]:
                 if y == r[0].size-1 or l == r[0].size-1:
-                    print("collision with outside object")
+                    print("Left: collision with outside object")
                     col = True
+                    return col
                 else:
-                    print("collision with self")
+                    print("Left: collision with self")
                     col = True
+                    return col
     if(not col):
-        print("no collisions detected")
+        print("Left: no collisions detected")
 
+    return col
 
+def detectCollisionRight(thetal):
+    
+    rightLimits = [(math.radians(-168), math.radians(-168+336)), (math.radians(-96.5), math.radians(-96.5+191)), (math.radians(-121), math.radians(-121+179)), (math.radians(-173), math.radians(-173+346)), (math.radians(0), math.radians(0+148)), (math.radians(-173.3), math.radians(-173.3+346.5)), (math.radians(-88), math.radians(-88+206)),(math.radians(-173.3), math.radians(-173.3+346.5))]
+    if(check(thetal,rightLimits)):
+        print("Right: Joint angles out of range")
+        return True
+    
+    theta = np.zeros(thetal.size)
+    for i in range(thetal.size):
+        theta[i] = math.radians(thetal[i])
+    col = False
 
+    S = rightArmS()
+    M = MR
+    r_robot = np.array([[0,.2,.05,.05,.05,.05,.05,.05,.05,.05]])
+    p_obstacle = np.array([[.95], [-.225], [1]])
+    r_obstacle = np.array([[.5]])
+    
+    coords = np.zeros((3,8))   
+    coords[:,0] = np.array([[.0177],[.0032],[.8777]]).reshape((3))
+    coords[:,1] = np.array([[.0818],[-.2558],[1.0540]]).reshape((3))
+    coords[:,2] = np.array([[.0818],[-.3248],[1.3244]]).reshape((3))
+    coords[:,3] = np.array([[.0818],[-.4268],[1.3244]]).reshape((3))
+    coords[:,4] = np.array([[.0818],[-.6892],[1.2554]]).reshape((3))
+    coords[:,5] = np.array([[.0818],[-.7928],[1.2554]]).reshape((3))
+    coords[:,6] = np.array([[.0818],[-1.0635],[1.2454]]).reshape((3))
+    coords[:,7] = np.array([[.0818],[-1.1795],[1.2454]]).reshape((3))
+        
+    #print(coords)
+    
+    
+    r = np.zeros((1,r_robot.size+r_obstacle.size))
+    r[0,:r_robot.size] = np.copy(r_robot)
+    r[0,r_robot.size:] = np.copy(r_obstacle)
+    
+    centers = np.zeros((3,r.size))
+    
+    centers[0][1] = coords[0][0]
+    centers[1][1] = coords[1][0]
+    centers[2][1] = coords[2][0]
+    
+    centers[:,r_robot.size:] = np.copy(p_obstacle)
+    
+    
+    
+    for i in range(theta.size):
+        startM = np.copy(M)
+        if(i != S[0].size-1):
+            startM[0][3] = coords[0][i+1]
+            startM[1][3] = coords[1][i+1]
+            startM[2][3] = coords[2][i+1]
+        Mt = TtoM(theta[:i+1].reshape((i+1,1)), S[:,:i+1], startM)
+        
+        centers[0][i+2] = Mt[0][3]
+        centers[1][i+2] = Mt[1][3]
+        centers[2][i+2] = Mt[2][3] 
+    for l in range(9):
+        for y in range(l+1,r.size):
+            dist = nl.norm(centers[:,l] - centers[:,y])
+            #dist = np.sqrt((centers[0][l] - centers[0][y])**2 + (centers[1][l] - centers[1][y])**2 + (centers[2][l] - centers[2][y])**2)
+            if dist < r[0][l]+r[0][y]:
+                if y == r[0].size-1 or l == r[0].size-1:
+                    print("Right: collision with outside object")
+                    col = True
+                    return col
+                else:
+                    print("Right: collision with self")
+                    col = True
+                    return col
+    if(not col):
+        print("Right: no collisions detected")
+
+    return col
+
+def totalLeft(larray):
+    lpose = leftArmPose(larray)
+    moveLeft(larray)
+    placeLeftJoints(larray)
+    moveObj(lpose, clientID, objHandleLeftTheoretical)
+    detectCollisionLeft(larray)
+    
+def totalRight(rarray):
+    rpose = rightArmPose(rarray)
+    moveRight(rarray)
+    placeRightJoints(rarray)
+    moveObj(rpose, clientID, objHandleRightTheoretical)
+    detectCollisionRight(rarray)
