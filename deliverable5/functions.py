@@ -409,16 +409,18 @@ def check(theta, limits):
 def invLeftArm(xl, yl, zl):
     #start at zero position
     
-    r=0
-    rpose = rightArmPose(0,r,r,r,r,r,r,r)   
-    l=0
-    lpose = leftArmPose(0,l,l,l,l,l,l,l)
-    moveObj(rpose, clientID, objHandleRightTheoretical)
-    moveObj(lpose, clientID, objHandleLeftTheoretical)
-    for i in range(0,7):
-        vrep.simxSetJointTargetPosition(clientID, rightArm[i], math.radians(r), vrep.simx_opmode_oneshot)
-        vrep.simxSetJointTargetPosition(clientID, leftArm[i], math.radians(l), vrep.simx_opmode_oneshot)
-    
+# =============================================================================
+#     r=0
+#     rpose = rightArmPose(np.array([0,r,r,r,r,r,r,r]))   
+#     l=0
+#     lpose = leftArmPose(np.array([0,l,l,l,l,l,l,l]))
+#     moveObj(rpose, clientID, objHandleRightTheoretical)
+#     moveObj(lpose, clientID, objHandleLeftTheoretical)
+#     for i in range(0,7):
+#         vrep.simxSetJointTargetPosition(clientID, rightArm[i], math.radians(r), vrep.simx_opmode_oneshot)
+#         vrep.simxSetJointTargetPosition(clientID, leftArm[i], math.radians(l), vrep.simx_opmode_oneshot)
+#     
+# =============================================================================
 
     leftTip = int(vrep.simxGetObjectHandle(clientID, 'Baxter_leftArm_tip', vrep.simx_opmode_blocking)[1])
     T_2in0 = np.array([[1, 0, 0, xl], [0, 1, 0, yl], [0, 0, 1, zl], [0.00000000, 0.00000000, 0.00000000, 1.00000000]])
@@ -436,7 +438,7 @@ def invLeftArm(xl, yl, zl):
         failCount = 0;
         count = 0
         while nl.norm(V) >=.01 and nl.norm(thetadot) >= .0001:
-            thetadot = td(J,V0, thetaL)
+            thetadot = td(J,V0)
             thetaL = thetaL + thetadot*1
             TL_1in0 = TtoM(thetaL,SL,ML)
             J = Jmaker(thetaL, SL)
@@ -458,33 +460,40 @@ def invLeftArm(xl, yl, zl):
                 if(failCount >= 7):
                     print("Position Unreachable")
                     print()
-                    return
+                    return None
         # print(repr(thetaL))
         #checking if the angles are within limit of their respective joints
+        for i in range(thetaL.size):
+            if(thetaL[i,0] > math.pi):
+                thetaL[i,0] = thetaL[i,0] - 2*math.pi
+            elif(thetaL[i,0] < -math.pi):
+                thetaL[i,0] = thetaL[i,0] + 2*math.pi
         if(check(thetaL, LeftLimits)):
-            time.sleep(1) 
-            vrep.simxSetJointTargetPosition(clientID, rotJoint, thetaL[0], vrep.simx_opmode_oneshot)
-            for i in range(0,7):
-                vrep.simxSetJointTargetPosition(clientID, leftArm[i], thetaL[i+1], vrep.simx_opmode_oneshot)
-                time.sleep(.5)
-            #leftPose = leftArmPose(thetaL[0], thetaL[1], thetaL[2],thetaL[3],thetaL[4],thetaL[5],thetaL[6],thetaL[7],)
-            time.sleep(.5)
-            leftEndTip = vrep.simxGetObjectPosition(clientID, leftTip, -1, vrep.simx_opmode_blocking)[1]
-            if(nl.norm(T_2in0[:3,3]-np.array(leftEndTip))> 0.01):
-                #checking final pose, in case any obsticles got in the way (even though joint angles were okay.)
-                print("Hmmmm, the end of the baxter arm is not where it should be. Collision detected")
-                print("Difference: " + str(nl.norm(T_2in0[:3,3]-np.array(leftEndTip))))
-                print()
-                thetaL = np.array([[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)]])
-                thetadot = np.array([100])
-                TL_1in0 = TtoM(thetaL,SL,ML)
-                J = Jmaker(thetaL,SL)
-                V0 = dvskew(sl.logm(T_2in0.dot(nl.inv(TL_1in0))))
-                V = dvskew(sl.logm(T_2in0.dot(nl.inv(TL_1in0))))
-                continue
-            print("BINGO! Position Achieved!")
-            print()
-            time.sleep(3)
+# =============================================================================
+#             time.sleep(1) 
+#             vrep.simxSetJointTargetPosition(clientID, rotJoint, thetaL[0], vrep.simx_opmode_oneshot)
+#             for i in range(0,7):
+#                 vrep.simxSetJointTargetPosition(clientID, leftArm[i], thetaL[i+1], vrep.simx_opmode_oneshot)
+#                 time.sleep(.5)
+#             #leftPose = leftArmPose(thetaL[0], thetaL[1], thetaL[2],thetaL[3],thetaL[4],thetaL[5],thetaL[6],thetaL[7],)
+#             time.sleep(.5)
+#             leftEndTip = vrep.simxGetObjectPosition(clientID, leftTip, -1, vrep.simx_opmode_blocking)[1]
+#             if(nl.norm(T_2in0[:3,3]-np.array(leftEndTip))> 0.01):
+#                 #checking final pose, in case any obsticles got in the way (even though joint angles were okay.)
+#                 print("Hmmmm, the end of the baxter arm is not where it should be. Collision detected")
+#                 print("Difference: " + str(nl.norm(T_2in0[:3,3]-np.array(leftEndTip))))
+#                 print()
+#                 thetaL = np.array([[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)]])
+#                 thetadot = np.array([100])
+#                 TL_1in0 = TtoM(thetaL,SL,ML)
+#                 J = Jmaker(thetaL,SL)
+#                 V0 = dvskew(sl.logm(T_2in0.dot(nl.inv(TL_1in0))))
+#                 V = dvskew(sl.logm(T_2in0.dot(nl.inv(TL_1in0))))
+#                 continue
+#             print("BINGO! Position Achieved!")
+#             print()
+#             time.sleep(3)
+# =============================================================================
             break
         else:
             print("Came up with set of thetas where some of them where out of range, trying again with different starting position")
@@ -496,21 +505,23 @@ def invLeftArm(xl, yl, zl):
             J = Jmaker(thetaL,SL)
             V0 = dvskew(sl.logm(T_2in0.dot(nl.inv(TL_1in0))))
             V = dvskew(sl.logm(T_2in0.dot(nl.inv(TL_1in0))))
-        
+    return thetaL
         
         
 def invRightArm(xr, yr, zr):
     #start at zero position
     
-    r=0
-    rpose = rightArmPose(0,r,r,r,r,r,r,r)   
-    l=0
-    lpose = leftArmPose(0,l,l,l,l,l,l,l)
-    moveObj(rpose, clientID, objHandleRightTheoretical)
-    moveObj(lpose, clientID, objHandleLeftTheoretical)
-    for i in range(0,7):
-        vrep.simxSetJointTargetPosition(clientID, rightArm[i], math.radians(r), vrep.simx_opmode_oneshot)
-        vrep.simxSetJointTargetPosition(clientID, leftArm[i], math.radians(l), vrep.simx_opmode_oneshot)
+# =============================================================================
+#     r=0
+#     rpose = rightArmPose(np.array([0,r,r,r,r,r,r,r]))   
+#     l=0
+#     lpose = leftArmPose(np.array([0,l,l,l,l,l,l,l]))
+#     moveObj(rpose, clientID, objHandleRightTheoretical)
+#     moveObj(lpose, clientID, objHandleLeftTheoretical)
+#     for i in range(0,7):
+#         vrep.simxSetJointTargetPosition(clientID, rightArm[i], math.radians(r), vrep.simx_opmode_oneshot)
+#         vrep.simxSetJointTargetPosition(clientID, leftArm[i], math.radians(l), vrep.simx_opmode_oneshot)
+# =============================================================================
     
 
     rightTip = int(vrep.simxGetObjectHandle(clientID, 'Baxter_rightArm_tip', vrep.simx_opmode_blocking)[1])
@@ -529,7 +540,7 @@ def invRightArm(xr, yr, zr):
         count = 0
         failCount = 0
         while nl.norm(V) >=.01 and nl.norm(thetadot) >= .0001:
-            thetadot = td(J,V0, thetaR)
+            thetadot = td(J,V0)
             thetaR = thetaR + thetadot*1
             TR_1in0 = TtoM(thetaR,SR,MR)
             J = Jmaker(thetaR, SR)
@@ -551,32 +562,39 @@ def invRightArm(xr, yr, zr):
                 if(failCount >= 7):
                     print("Position Unreachable")
                     print()
-                    return
+                    return None
         # print(repr(thetaR))
         #checking if the angles are within limit of their respective joints
+        for i in range(thetaR.size):
+            if(thetaR[i,0] > math.pi):
+                thetaR[i,0] = thetaR[i,0] - 2*math.pi
+            elif(thetaR[i,0] < -math.pi):
+                thetaR[i,0] = thetaR[i,0] + 2*math.pi
         if(check(thetaR, rightLimits)):
-            time.sleep(1) 
-            vrep.simxSetJointTargetPosition(clientID, rotJoint, thetaR[0], vrep.simx_opmode_oneshot)
-            for i in range(0,7):
-                vrep.simxSetJointTargetPosition(clientID, rightArm[i], thetaR[i+1], vrep.simx_opmode_oneshot)
-                time.sleep(.5)
-            time.sleep(.5)
-            leftEndTip = vrep.simxGetObjectPosition(clientID, rightTip, -1, vrep.simx_opmode_blocking)[1]
-            if(nl.norm(T_2in0[:3,3]-np.array(leftEndTip))> 0.01):
-                #checking final pose, in case any obsticles got in the way (even though joint angles were okay.)
-                print("Hmmmm, the end of the baxter arm is not where it should be. Collision detected")
-                print("Difference: " + str(nl.norm(T_2in0[:3,3]-np.array(leftEndTip))))
-                print()
-                thetaR = np.array([[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)]])
-                thetadot = np.array([100])
-                TR_1in0 = TtoM(thetaR,SR,MR)
-                J = Jmaker(thetaR,SR)
-                V0 = dvskew(sl.logm(T_2in0.dot(nl.inv(TR_1in0))))
-                V = dvskew(sl.logm(T_2in0.dot(nl.inv(TR_1in0))))
-                continue
-            print("BINGO! Position Achieved!")
-            print()
-            time.sleep(3)
+# =============================================================================
+#             time.sleep(1) 
+#             vrep.simxSetJointTargetPosition(clientID, rotJoint, thetaR[0], vrep.simx_opmode_oneshot)
+#             for i in range(0,7):
+#                 vrep.simxSetJointTargetPosition(clientID, rightArm[i], thetaR[i+1], vrep.simx_opmode_oneshot)
+#                 time.sleep(.5)
+#             time.sleep(.5)
+#             leftEndTip = vrep.simxGetObjectPosition(clientID, rightTip, -1, vrep.simx_opmode_blocking)[1]
+#             if(nl.norm(T_2in0[:3,3]-np.array(leftEndTip))> 0.01):
+#                 #checking final pose, in case any obsticles got in the way (even though joint angles were okay.)
+#                 print("Hmmmm, the end of the baxter arm is not where it should be. Collision detected")
+#                 print("Difference: " + str(nl.norm(T_2in0[:3,3]-np.array(leftEndTip))))
+#                 print()
+#                 thetaR = np.array([[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)]])
+#                 thetadot = np.array([100])
+#                 TR_1in0 = TtoM(thetaR,SR,MR)
+#                 J = Jmaker(thetaR,SR)
+#                 V0 = dvskew(sl.logm(T_2in0.dot(nl.inv(TR_1in0))))
+#                 V = dvskew(sl.logm(T_2in0.dot(nl.inv(TR_1in0))))
+#                 continue
+#             print("BINGO! Position Achieved!")
+#             print()
+#             time.sleep(3)
+# =============================================================================
             break
         else:
             
@@ -589,7 +607,7 @@ def invRightArm(xr, yr, zr):
             J = Jmaker(thetaR,SR)
             V0 = dvskew(sl.logm(T_2in0.dot(nl.inv(TR_1in0))))
             V = dvskew(sl.logm(T_2in0.dot(nl.inv(TR_1in0)))) 
-
+    return thetaR
     
 def moveLeft(thetas):
     vrep.simxSetJointTargetPosition(clientID, rotJoint, math.radians(thetas[0]), vrep.simx_opmode_oneshot) 
@@ -746,8 +764,6 @@ def detectCollisionLeft(thetal):
                     print("Left: collision with self")
                     col = True
                     return col
-    if(not col):
-        print("Left: no collisions detected")
 
     return col
 
@@ -820,9 +836,6 @@ def detectCollisionRight(thetal):
                     print("Right: collision with self")
                     col = True
                     return col
-    if(not col):
-        print("Right: no collisions detected")
-
     return col
 
 def totalLeft(larray):
@@ -838,3 +851,296 @@ def totalRight(rarray):
     placeRightJoints(rarray)
     moveObj(rpose, clientID, objHandleRightTheoretical)
     detectCollisionRight(rarray)
+    
+    
+def col_det(S, M, coords, r_robot, p_obstacle, r_obstacle, theta):
+
+    
+    r = np.zeros(r_robot.size+r_obstacle.size)
+    r[:r_robot.size] = np.copy(r_robot)
+    r[r_robot.size:] = np.copy(r_obstacle)
+    
+    
+    centers = np.zeros((3,r.size))
+    centers[0][1] = coords[0][0]
+    centers[1][1] = coords[1][0]
+    centers[2][1] = coords[2][0]
+    centers[:,S[0].size+2:] = np.copy(p_obstacle[:,:])
+    
+    for i in range(S[0].size):
+        startM = np.copy(M)
+        if(i != S[0].size-1):
+            startM[0][3] = coords[0][i+1]
+            startM[1][3] = coords[1][i+1]
+            startM[2][3] = coords[2][i+1]
+        Mt = TtoM(theta[:i+1].reshape((i+1,1)), S[:,:i+1], startM)
+        
+        centers[0][i+2] = Mt[0][3]
+        centers[1][i+2] = Mt[1][3]
+        centers[2][i+2] = Mt[2][3] 
+    for l in range(S[0].size+2):
+        for y in range(S[0].size+2,r.size):
+            if(l==y):
+                continue
+            dist = nl.norm(centers[:,l] - centers[:,y])
+            #dist = np.sqrt((centers[0][l] - centers[0][y])**2 + (centers[1][l] - centers[1][y])**2 + (centers[2][l] - centers[2][y])**2)
+            if dist < r[y]+r[l]:
+                return True
+    return False
+
+def lineClear(S, M, coords, r_robot, p_obstacle, r_obstacle, theta_start, theta_end):
+    sig = .01
+    dist = nl.norm(theta_start-theta_end)
+    count = 1+math.ceil(dist/sig)
+    s = 0
+    for i in range(count):
+        s = s + 1/count
+        theta = (1-s)*theta_start[:,0]+s*theta_end[:,0]
+        if(col_det(S, M, coords, r_robot, p_obstacle, r_obstacle, theta)):
+            return False
+    return True
+
+def getRightToPoint():
+    theta_start = np.zeros((8,1));
+    theta_start[0] = vrep.simxGetJointPosition(clientID, rotJoint, vrep.simx_opmode_streaming)[1]
+    for i in range(1,8):
+        theta_start[i] = vrep.simxGetJointPosition(clientID, rightArm[i-1], vrep.simx_opmode_streaming)[1]
+    
+    x = float(input("Enter the x coordinate of where you want the right arm to go: "))
+    y = float(input("Enter the y coordinate of where you want the right arm to go: "))
+    z = float(input("Enter the z coordinate of where you want the right arm to go: "))
+    rotBaseM = np.copy(MR)
+    rotBaseM[0,3] = x
+    rotBaseM[1,3] = y
+    rotBaseM[2,3] = z
+    
+    moveObj(rotBaseM, clientID, dummyPos)
+    theta_goal = invRightArm(x, y, z)
+    print(theta_goal)
+    if(theta_goal is None):
+        print("Sorry, we could not come up with a path to the point because right arm cannont reach it." )
+        return
+    
+    S = rightArmS()
+    M = np.copy(MR)
+    r_robot = np.array([[0,.2,.1,.05,.05,.05,.05,.05,.05,.05]])
+    coords = np.zeros((3,8))   
+    coords[:,0] = np.array([[.0177],[.0032],[.8777]]).reshape((3))
+    coords[:,1] = np.array([[.0818],[-.2558],[1.0540]]).reshape((3))
+    coords[:,2] = np.array([[.0818],[-.3248],[1.3244]]).reshape((3))
+    coords[:,3] = np.array([[.0818],[-.4268],[1.3244]]).reshape((3))
+    coords[:,4] = np.array([[.0818],[-.6892],[1.2554]]).reshape((3))
+    coords[:,5] = np.array([[.0818],[-.7928],[1.2554]]).reshape((3))
+    coords[:,6] = np.array([[.0818],[-1.0635],[1.2454]]).reshape((3))
+    coords[:,7] = np.array([[.0818],[-1.1795],[1.2454]]).reshape((3))
+    
+    class Tree(object):
+        def __init__(self):
+            self.theta = None
+            self.parent = None
+            self.start = None
+    
+    rootStart = Tree()
+    rootStart.theta = np.copy(theta_start)
+    rootStart.start = True
+    
+    rootEnd = Tree()
+    rootEnd.theta = np.copy(theta_goal)
+    rootEnd.start = False
+    
+    accepted = np.array([rootStart, rootEnd])
+    if(lineClear(S, M, coords, r_robot, p_obstacle, r_obstacle, rootStart.theta, rootEnd.theta)):
+        answer = np.concatenate((theta_start,theta_goal),axis=1)
+    else:
+        notFound = True
+        while(notFound):  
+            tempTheta = np.zeros((theta_start[:,0].size,1))
+            for i in range(theta_start[:,0].size):
+                tempTheta[i][0] = random.uniform(rightLimits[i][0], rightLimits[i][1])
+            if(col_det(S, M, coords, r_robot, p_obstacle, r_obstacle, tempTheta)):
+                continue
+            tempT  = TtoM(tempTheta,S,M)
+            currentClosest = accepted[0]
+            currentDistance = nl.norm(rootStart.theta - tempTheta)
+            for i in range(1,accepted.size):
+                dist = nl.norm(accepted[i].theta - tempTheta)
+                if dist < currentDistance:
+                    currentDistance = dist
+                    currentClosest = accepted[i]
+            if(lineClear(S, M, coords, r_robot, p_obstacle, r_obstacle, currentClosest.theta, tempTheta)):
+                node = Tree()
+                node.theta = np.copy(tempTheta)
+                node.parent = currentClosest
+                node.start = currentClosest.start
+                secondClosest = None
+                secondClosestDist = np.inf
+                for ele in accepted:
+                    if ele.start != node.start:
+                        tempDist = nl.norm(ele.theta - node.theta)
+                        if tempDist < secondClosestDist:
+                            secondClosest = ele
+                            secondClosestDist = tempDist
+                if(lineClear(S, M, coords, r_robot, p_obstacle, r_obstacle, node.theta, secondClosest.theta)):
+                            fromStart = node
+                            fromEnd = secondClosest
+                            if(secondClosest.start):
+                                fromStart = secondClosest
+                                fromEnd = node
+                            answer = np.concatenate((fromStart.theta, fromEnd.theta),axis = 1)
+                            while(fromStart.parent is not None):
+                                fromStart = fromStart.parent
+                                answer = np.concatenate((fromStart.theta, answer),axis = 1)
+                            while(fromEnd.parent is not None):
+                                fromEnd = fromEnd.parent
+                                answer = np.concatenate((answer, fromEnd.theta),axis = 1)
+                            #print(repr(answer))
+                            notFound = False
+                            break
+                accepted = np.append(accepted, copy.copy(node))
+    print(repr(answer))
+    
+    #make left arm go straight up so it doesnt hit anything lol
+    rotAngle = 0
+    larray = np.array([rotAngle,0,-90,0,0,0,0,0])
+    totalLeft(larray)
+    for x in range(answer[0].size-1):
+        theta_start_t = answer[:,x].reshape((8,1))
+        theta_end_t = answer[:,x+1].reshape((8,1))
+        sig = .2
+        dist = nl.norm(theta_start_t-theta_end_t)
+        count = 1+math.ceil(dist/sig)
+        s = 0
+        for blagh in range(count):
+            s = s + 1/count
+            thetaNext = (1-s)*theta_start_t[:,0]+s*theta_end_t[:,0]
+            for p in range(thetaNext.size):
+                thetaNext[p] =  math.degrees(thetaNext[p])
+            rotAngle = thetaNext[0]
+            larray = np.array([rotAngle,0,-90,0,0,0,0,0])
+            totalLeft(larray)
+            totalRight(thetaNext)
+            time.sleep(.05)
+            
+            
+    
+def getLeftToPoint():
+    theta_start = np.zeros((8,1));
+    theta_start[0] = vrep.simxGetJointPosition(clientID, rotJoint, vrep.simx_opmode_streaming)[1]
+    for i in range(1,8):
+        theta_start[i] = vrep.simxGetJointPosition(clientID, leftArm[i-1], vrep.simx_opmode_streaming)[1]
+    
+    x = float(input("Enter the x coordinate of where you want the left arm to go: "))
+    y = float(input("Enter the y coordinate of where you want the left arm to go: "))
+    z = float(input("Enter the z coordinate of where you want the left arm to go: "))
+    rotBaseM = np.copy(ML)
+    rotBaseM[0,3] = x
+    rotBaseM[1,3] = y
+    rotBaseM[2,3] = z
+    
+    moveObj(rotBaseM, clientID, dummyPos)
+    theta_goal = invLeftArm(x, y, z)
+    print(theta_goal)
+    if(theta_goal is None):
+        print("Sorry, we could not come up with a path to the point because left arm cannont reach it." )
+        return
+    
+    S = leftArmS()
+    M = np.copy(ML)
+    r_robot = np.array([[0,.2,.1,.05,.05,.05,.05,.05,.05,.05]])
+    coords = np.zeros((3,8))   
+    coords[:,0] = np.array([[.0177],[.0032],[.8777]]).reshape((3))
+    coords[:,1] = np.array([[.0815],[.2622],[1.0540]]).reshape((3))
+    coords[:,2] = np.array([[.0815],[.3312],[1.3244]]).reshape((3))
+    coords[:,3] = np.array([[.0815],[.4332],[1.3244]]).reshape((3))
+    coords[:,4] = np.array([[.0815],[.6956],[1.2554]]).reshape((3))
+    coords[:,5] = np.array([[.0815],[.7992],[1.2554]]).reshape((3))
+    coords[:,6] = np.array([[.0815],[1.0699],[1.2454]]).reshape((3))
+    coords[:,7] = np.array([[.0815],[1.1859],[1.2454]]).reshape((3))
+        
+    
+    class Tree(object):
+        def __init__(self):
+            self.theta = None
+            self.parent = None
+            self.start = None
+    
+    rootStart = Tree()
+    rootStart.theta = np.copy(theta_start)
+    rootStart.start = True
+    
+    rootEnd = Tree()
+    rootEnd.theta = np.copy(theta_goal)
+    rootEnd.start = False
+    
+    accepted = np.array([rootStart, rootEnd])
+    if(lineClear(S, M, coords, r_robot, p_obstacle, r_obstacle, rootStart.theta, rootEnd.theta)):
+        answer = np.concatenate((theta_start,theta_goal),axis=1)
+    else:
+        notFound = True
+        while(notFound):  
+            tempTheta = np.zeros((theta_start[:,0].size,1))
+            for i in range(theta_start[:,0].size):
+                tempTheta[i][0] = random.uniform(LeftLimits[i][0], LeftLimits[i][1])
+            if(col_det(S, M, coords, r_robot, p_obstacle, r_obstacle, tempTheta)):
+                continue
+            tempT  = TtoM(tempTheta,S,M)
+            currentClosest = accepted[0]
+            currentDistance = nl.norm(rootStart.theta - tempTheta)
+            for i in range(1,accepted.size):
+                dist = nl.norm(accepted[i].theta - tempTheta)
+                if dist < currentDistance:
+                    currentDistance = dist
+                    currentClosest = accepted[i]
+            if(lineClear(S, M, coords, r_robot, p_obstacle, r_obstacle, currentClosest.theta, tempTheta)):
+                node = Tree()
+                node.theta = np.copy(tempTheta)
+                node.parent = currentClosest
+                node.start = currentClosest.start
+                secondClosest = None
+                secondClosestDist = np.inf
+                for ele in accepted:
+                    if ele.start != node.start:
+                        tempDist = nl.norm(ele.theta - node.theta)
+                        if tempDist < secondClosestDist:
+                            secondClosest = ele
+                            secondClosestDist = tempDist
+                if(lineClear(S, M, coords, r_robot, p_obstacle, r_obstacle, node.theta, secondClosest.theta)):
+                            fromStart = node
+                            fromEnd = secondClosest
+                            if(secondClosest.start):
+                                fromStart = secondClosest
+                                fromEnd = node
+                            answer = np.concatenate((fromStart.theta, fromEnd.theta),axis = 1)
+                            while(fromStart.parent is not None):
+                                fromStart = fromStart.parent
+                                answer = np.concatenate((fromStart.theta, answer),axis = 1)
+                            while(fromEnd.parent is not None):
+                                fromEnd = fromEnd.parent
+                                answer = np.concatenate((answer, fromEnd.theta),axis = 1)
+                            #print(repr(answer))
+                            notFound = False
+                            break
+                accepted = np.append(accepted, copy.copy(node))
+    print(repr(answer))
+
+    #make left right go straight up so it doesnt hit anything lol
+    rotAngle = 0
+    rarray = np.array([rotAngle,0,-90,0,0,0,0,0])
+    totalRight(rarray)
+    for x in range(answer[0].size-1):
+        theta_start_t = answer[:,x].reshape((8,1))
+        theta_end_t = answer[:,x+1].reshape((8,1))
+        sig = .2
+        dist = nl.norm(theta_start_t-theta_end_t)
+        count = 1+math.ceil(dist/sig)
+        s = 0
+        for blagh in range(count):
+            s = s + 1/count
+            thetaNext = (1-s)*theta_start_t[:,0]+s*theta_end_t[:,0]
+            for p in range(thetaNext.size):
+                thetaNext[p] =  math.degrees(thetaNext[p])
+            rotAngle = thetaNext[0]
+            rarray = np.array([rotAngle,0,-90,0,0,0,0,0])
+            totalRight(rarray)
+            totalLeft(thetaNext)
+            time.sleep(.05)

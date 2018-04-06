@@ -7,6 +7,8 @@ from math import factorial
 import vrep
 import time
 import random
+import copy
+
     
 
 vrep.simxFinish(-1)
@@ -84,17 +86,19 @@ dummy6R = int(vrep.simxGetObjectHandle(clientID, 'Dummy6R', vrep.simx_opmode_blo
 dummy7R = int(vrep.simxGetObjectHandle(clientID, 'Dummy7R', vrep.simx_opmode_blocking)[1])
 dummyEndR = int(vrep.simxGetObjectHandle(clientID, 'DummyEndR', vrep.simx_opmode_blocking)[1])
 
+dummyPos = int(vrep.simxGetObjectHandle(clientID, 'DummyPos', vrep.simx_opmode_blocking)[1])
+
 leftArmDummies = np.array([dummyRot, dummy1L, dummy2L, dummy3L, dummy4L, dummy5L, dummy6L, dummy7L, dummyEndL])
 
 rightArmDummies = np.array([dummyRot, dummy1R, dummy2R, dummy3R, dummy4R, dummy5R, dummy6R, dummy7R, dummyEndR])
 
 #arm joint angle limits
-rightLimits = [(math.radians(-168), math.radians(-168+336)), (math.radians(-96.5), math.radians(-96.5+170)), (math.radians(-115), math.radians(-115+175)), (math.radians(-173), math.radians(-173+346)), (math.radians(0), math.radians(0+148)), (math.radians(-173.3), math.radians(-173.3+346.5)), (math.radians(-88), math.radians(-88+206)),(math.radians(-173.3), math.radians(-173.3+346.5))]
-LeftLimits = [(math.radians(-168), math.radians(-168+336)), (math.radians(-96.5), math.radians(-96.5+170)), (math.radians(-115), math.radians(-115+175)), (math.radians(-173), math.radians(-173+346)), (math.radians(0), math.radians(0+148)), (math.radians(-173.3), math.radians(-173.3+346.5)), (math.radians(-88), math.radians(-88+206)),(math.radians(-173.3), math.radians(-173.3+346.5))]
-
+rightLimits = [(math.radians(-168), math.radians(-168+336)), (math.radians(-56), math.radians(-56+152.5)), (math.radians(-115), math.radians(-115+175)), (math.radians(-173), math.radians(-173+346)), (math.radians(0), math.radians(0+148)), (math.radians(-173.3), math.radians(-173.3+346.5)), (math.radians(-88), math.radians(-88+206)),(math.radians(-173.3), math.radians(-173.3+346.5))]
+LeftLimits = [(math.radians(-168), math.radians(-168+336)), (math.radians(-97.5), math.radians(-97.5+152.5)), (math.radians(-115), math.radians(-115+175)), (math.radians(-173), math.radians(-173+346)), (math.radians(0), math.radians(0+148)), (math.radians(-173.3), math.radians(-173.3+346.5)), (math.radians(-88), math.radians(-88+206)),(math.radians(-173.3), math.radians(-173.3+346.5))]
+(math.radians(-97.5), math.radians(-97.5+152.5))
 #outsdie obstacle properties
-p_obstacle = np.array([[.95, 0, 0, 0], [-.225, 0, 0, 0], [1, 1.6, 1.25, .4]])
-r_obstacle = np.array([[.5, .2, .15, .2]])
+p_obstacle = np.array([[.95, 0, 0, 0, -.95, -.9, .725], [-.225, 0, 0, 0, .925, -.95, .8], [1, 1.6, 1.25, .4, 1, 1, .5]])
+r_obstacle = np.array([[.5, .2, .15, .2, .5, .5, .5]])
 
 vrep.simxStartSimulation(clientID, vrep.simx_opmode_oneshot)
 
