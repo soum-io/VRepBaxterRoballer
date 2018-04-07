@@ -317,25 +317,25 @@ def collDetect(theta, radius, arm, clientID):
                 x2 = radius[i] + radius[j]
                 
                 # check collision for object in the scene
-                # sphere of radius 1 and position [0, -1.3, .5]
+                # sphere of radius .5 and position [0, -1.3, .5]
                 pObstacle = np.array((0, -1.3, .5))
-                rObstacle = 1
+                rObstacle = .5
                 x3 = nl.norm(pFinal[:,i] - pObstacle)
-                x4 = radius[i] - rObstacle
-                
-                
+                x4 = radius[i] + rObstacle
+             
                 if (x1 <= x2):
                     # a self-collision occured somewhere
                     print('self collision')
                     collFlag = 1
-                elif (x3 <= x4):
-                    # a collision with an obstacle in the environment occurred
-                    print('obstacle collision')
+                if (x3 <= x4):
+                    # a collision with an obstacle in the environment occured
+                    #print('obstacle collision')
                     collFlag = 2
                 else:
                     # no collisions occurred
                     pass
-
+                
+                
     return collFlag, pFinal
 
 ####################################################################
@@ -393,16 +393,21 @@ print('Moving to Initial Position')
 for i in range(0, 7):
     vrep.simxSetJointPosition(clientID, rightArm[i], math.radians(0), vrep.simx_opmode_oneshot)
     vrep.simxSetJointPosition(clientID, leftArm[i], math.radians(0), vrep.simx_opmode_oneshot)
-    
-# these radii are realistically chosen to fit the Baxter robot
+
+#TODO: put the bounding spheres on only some of the joints so the annoying self-collisions don't happen with the joints
+    #right next to each other
 #(r0, r1, r2, r3, r4,r5, r6, r7) = (.7, .2, .2, .1, .15, .15, .15, .1)
-(r0, r1, r2, r3, r4,r5, r6, r7) = (.1, .1, .1, .1, .1, .1, .1, .1)
+#(r0, r1, r2, r3, r4,r5, r6, r7) = (.05, .05, .05, .05, .05, .05, .05, .35)
+#(r0, r1, r2, r3, r4,r5, r6, r7) = (.05, .05, .05, .05, .05, .05, .05, .25)
+(r0, r1, r2, r3, r4,r5, r6, r7) = (.3, .05, .05, .05, .05, .05, .05, .05)
+
 
 radius = np.array((r0, r1, r2, r3, r4,r5, r6, r7))
 
 arm = 'right'
+###############################################################
 '''
-# robot parameters
+# robot parameters obsolete
 numJoints = 8
 numOrientations = 30
 
@@ -418,21 +423,31 @@ theta[1, 10:20] = np.linspace(0, -40, 10, endpoint=True)
 theta[1, 20:30] = 90
 theta[3, 20:30] = np.linspace(90, 110, 10, endpoint=True)
 '''
-# robot parameters for debugging
+###############################################################
+# robot parameters 
 numJoints = 8
-numOrientations = 5
+numOrientations = 10
 
 theta = np.zeros((numJoints, numOrientations))
 theta[0, :] = 0
-# the collisions with the sphere
-theta[1, :] = np.linspace(10, 40, numOrientations, endpoint=True)
+
+# collisions with the obstacle
+#theta[1, :] = np.linspace(10, 40, numOrientations, endpoint=True)
+
+# no collisions
+#theta[1, :] = np.linspace(-90, -80, numOrientations, endpoint=True)
+
+# self collisions
+theta[1,:] = 90
+theta[3,:] = np.linspace(90, 110, numOrientations, endpoint=True)
 
 
+###############################################################
 collision = np.zeros((numOrientations))
 
 # the part that moves the robot and the dummy variables
 for i in range(0,np.shape(theta)[1]):
-    print('orientation ' + str(i) + '\n')
+    #print('orientation ' + str(i) + '\n')
     vector = np.reshape(theta[:,i], (8, 1))
     
     thetaLocal = vector
@@ -444,7 +459,7 @@ for i in range(0,np.shape(theta)[1]):
         # move the robot arm joints one by one
         angle = thetaLocal[j]
         vrep.simxSetJointPosition(clientID, rightArm[j], math.radians(angle), vrep.simx_opmode_oneshot)
-                
+        '''        
         # move the dummy objects one by one at the same time as the robot arm joint they represent
         objName = 'Dummy' + str(j)
         objHandle = vrep.simxGetObjectHandle(clientID, objName, vrep.simx_opmode_blocking)[1]
@@ -453,18 +468,18 @@ for i in range(0,np.shape(theta)[1]):
         pDummy = pFinal[:,j].tolist()
         
         pActual = vrep.simxGetObjectPosition(clientID, objHandle, -1, vrep.simx_opmode_blocking)[1]
-        print('the position we want')
-        print(pDummy)
-        print('the position we are at')
-        print(pActual)
-        time.sleep(3)
+        #print('joint ' + str(i) + ' the position we calculated')
+        #print(pDummy)
+        #print('joint ' + str(i) + 'the position in the sim')
+        #print(pActual)
+        #print('\n')
+        #time.sleep(.5)
         
         vrep.simxSetObjectPosition(clientID, objHandle, -1, pDummy, vrep.simx_opmode_blocking)
         #time.sleep(.5)
+        '''
+    time.sleep(.5)
 
-    time.sleep(3)
-
-#for i in range(0,7):
     
 # Before closing the connection to V-REP, make sure that the last command sent out had time to arrive. You can guarantee this with (for example):
 vrep.simxGetPingTime(clientID)
