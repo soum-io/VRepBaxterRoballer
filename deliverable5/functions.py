@@ -889,7 +889,7 @@ def col_det(S, M, coords, r_robot, p_obstacle, r_obstacle, theta):
     return False
 
 def lineClear(S, M, coords, r_robot, p_obstacle, r_obstacle, theta_start, theta_end):
-    sig = .01
+    sig = .1
     dist = nl.norm(theta_start-theta_end)
     count = 1+math.ceil(dist/sig)
     s = 0
@@ -952,8 +952,11 @@ def getRightToPoint():
     if(lineClear(S, M, coords, r_robot, p_obstacle, r_obstacle, rootStart.theta, rootEnd.theta)):
         answer = np.concatenate((theta_start,theta_goal),axis=1)
     else:
+        count = 0
         notFound = True
-        while(notFound):  
+        while(notFound):
+            if(count > 1000):
+                print("Sorry, the robot configuration could not be reached after 1000 attempts")
             tempTheta = np.zeros((theta_start[:,0].size,1))
             for i in range(theta_start[:,0].size):
                 tempTheta[i][0] = random.uniform(rightLimits[i][0], rightLimits[i][1])
@@ -997,6 +1000,7 @@ def getRightToPoint():
                             notFound = False
                             break
                 accepted = np.append(accepted, copy.copy(node))
+            count = count + 1
     print(repr(answer))
     
     #make left arm go straight up so it doesnt hit anything lol
@@ -1076,8 +1080,11 @@ def getLeftToPoint():
     if(lineClear(S, M, coords, r_robot, p_obstacle, r_obstacle, rootStart.theta, rootEnd.theta)):
         answer = np.concatenate((theta_start,theta_goal),axis=1)
     else:
+        count = 1
         notFound = True
-        while(notFound):  
+        while(notFound): 
+            if(count >=1000):
+                print("Sorry, the robot configuration could not be reached after 1000 attempts")
             tempTheta = np.zeros((theta_start[:,0].size,1))
             for i in range(theta_start[:,0].size):
                 tempTheta[i][0] = random.uniform(LeftLimits[i][0], LeftLimits[i][1])
@@ -1121,6 +1128,7 @@ def getLeftToPoint():
                             notFound = False
                             break
                 accepted = np.append(accepted, copy.copy(node))
+            count = count +1
     print(repr(answer))
 
     #make left right go straight up so it doesnt hit anything lol
@@ -1130,7 +1138,7 @@ def getLeftToPoint():
     for x in range(answer[0].size-1):
         theta_start_t = answer[:,x].reshape((8,1))
         theta_end_t = answer[:,x+1].reshape((8,1))
-        sig = .2
+        sig = .1
         dist = nl.norm(theta_start_t-theta_end_t)
         count = 1+math.ceil(dist/sig)
         s = 0
