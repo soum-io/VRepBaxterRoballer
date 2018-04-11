@@ -1,8 +1,28 @@
 # ECE 470 Motion Demonstration Project
 ### Group Members: _Michael Shea_ & _Jacob Heglund_
 ## Purpose
-This document is meant to explain how to obtain the results that are displayed in [this video.](https://www.youtube.com/watch?v=8MSGP3vnRhU&feature=youtu.be) The first steps were to choose a robot and a simulation enviroment. We chose to use [_V-Rep_](http://www.coppeliarobotics.com/) for our simulation enviroment and [Baxter](http://www.rethinkrobotics.com/baxter/) as the robot. The following steps are a guide to reproduce what we did in a _Windows 10_ enviroment. There are many ways to control a robot in V-Rep. We chose to use the [Remote API](http://www.coppeliarobotics.com/helpFiles/en/remoteApiFunctionsPython.htm) with [Python 3](). We used the [Spyder IDE](https://www.python.org/downloads/) for all the programming.
+This document is meant to explain how to obtain the results that are displayed in [this video.](https://www.youtube.com/watch?v=4WNGfvI6qjA&app=desktop) The first steps were to choose a robot and a simulation enviroment. We chose to use [_V-Rep_](http://www.coppeliarobotics.com/) for our simulation enviroment and [Baxter](http://www.rethinkrobotics.com/baxter/) as the robot. The following steps are a guide to reproduce what we did in a _Windows 10_ enviroment. There are many ways to control a robot in V-Rep. We chose to use the [Remote API](http://www.coppeliarobotics.com/helpFiles/en/remoteApiFunctionsPython.htm) with [Python 3](). We used the [Spyder IDE](https://www.python.org/downloads/) for all the programming.
 
+
+# Deliverable 4 - Demonstrate Collision Detection
+## The Job
+1. Write code that decides if a given set of joint variables (i.e., a configuration) places the robot in collision, either with itself or with something else in the environment. Note that one type of "self-collision" is violating joint limits (i.e., bounds on the value of a joint variable).
+
+2. Create a short video (at most 120 seconds) that shows the robot in many different configurations and that indicates, in some way, which of these configurations place the robot in collision. Your video must show at least a few configurations each that result in no collision, in self-collision, and in collision with other things.
+## The Work
+1. The inverse kinematics are implemented in _collDetect.py_.
+2. _collDetect.py_ implements most of the functions from the [previous deliverablse](https://github.com/smike1210/VRepBaxterRoballer/tree/master) to help obtain information such as the skew of a matrix, the different screw axis' of Baxter, etc...
+3. When run, the program will go through different configurations, 10 of which result in no collision, 10 of which result in collision with outside objects, and 10 of which result in collision with self. The video attached with this deliverable shows the code recognizing these situations and alerting the user accordingly.
+## How to Reproduce What is Shown in the Video
+1. First, [download _V-Rep_.](http://www.coppeliarobotics.com/) This guide assumes you will download the x64 _Windows 10_ version of _V-Rep_.
+2. After the download is complete, open the _V-REP_PRO_EDU_version number_Setup.exe_ file and go through the instructions to install the program on your machine.
+3. Once the program is fully installed, open _V-Rep_. When you first open it, it should look like [this](https://preview.ibb.co/cfZzNn/First_Time_Opening_VRep.png).
+4. Next, it is time to focus on the programming of Baxter. Before we start programming, create a folder in a directory of your choice that is a copy of this [GitHub directory](https://github.com/smike1210/VRepBaxterRoballer/tree/master/deliverable4).
+5. You directory should look something like [this](https://preview.ibb.co/kmKPNn/Directory.png).
+6. The first step is to obtain the scene used that is shown in the video. To do this, open the file called _Baxter_no_scripts.ttt_. To do this, in _V-Rep_, go to _file_ -> _open scene_ and then select the _Baxter_no_scripts.ttt_ file. The scene should look like [this](https://preview.ibb.co/bGNiF7/scene.png).
+7. Open _collDetect.py_ in _Spyder_. If you have not downloaded _Spyder_ already, you can do so [here](https://pythonhosted.org/spyder/installation.html). Downloading it is outside the scope of this document, but can be done very easily, and [this link](https://pythonhosted.org/spyder/installation.html) has a great guide on how to do so.
+8. Make sure that _V-Rep_ is already open, and then [press the green play button on the top bar of _Spyder_](https://preview.ibb.co/bC4r2n/play_Button.png). After pressing the play button, if you have _Spyder_ and _V-Rep_ filling up two different halves of your screen, you should be able to interact with the program and see Baxter going through the motions seen in the video linked above.
+9. Fin! (For now, at least...)
 
 
 # Deliverable 3 - Demonstrate forward kinematics
@@ -14,7 +34,7 @@ This document is meant to explain how to obtain the results that are displayed i
 3. Create a short video (at most 120 seconds) showing the robot achieving several different goal poses - selected either at random or in response to user input - and highlighting agreement between the goal pose and the actual pose of the tool frame in each case. Your video should also show the result of asking the robot to achieve at least one goal pose that is not reachable.
 ## The Work
 1. The inverse kinematics are implemented in _InverseKin.py_.
-2. _InverseKin.py_ implements most of the code from the [previous deliverable](https://github.com/smike1210/VRepBaxterRoballer/tree/master/deliverable2) to obtain the screw axis' for both of Baxter's arms. It then uses that information to arrive at a set of thetas to reach a desired ending position by constantly updating \grave{\theta} using the formula (J<sup>T</sup>J-.1I)<sup>-1</sup>J^<sup>T</sup>V.
+2. _InverseKin.py_ implements most of the code from the [previous deliverable](https://github.com/smike1210/VRepBaxterRoballer/tree/master/deliverable2) to obtain the screw axis' for both of Baxter's arms. It then uses that information to arrive at a set of thetas to reach a desired ending position by constantly updating theta using the formula (J<sup>T</sup>J-.1I)<sup>-1</sup>J^<sup>T</sup>V.
 3. When run, the program asks the user to enter the coordinates for the left arm to go to. It then goes through the algorithm described above to come up with a set of thetas for all of Baxter's seven left arm revolute joints and the main central rotation joint. The code checks that the thetas are all within the working limits of each joint, or if not, starts the algorithm over again. It also detects for bad inputs (e.g. location the arm cannot reach), and will notify the user when this happens. It will move to the calculated thetas when those test are passed. The code then repeats for the right arm as well.
 ## How to Reproduce What is Shown in the Video
 1. First, [download _V-Rep_.](http://www.coppeliarobotics.com/) This guide assumes you will download the x64 _Windows 10_ version of _V-Rep_.
