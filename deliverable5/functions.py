@@ -496,7 +496,7 @@ def invLeftArm(xl, yl, zl):
 # =============================================================================
             break
         else:
-            print("Came up with set of thetas where some of them where out of range, trying again with different starting position")
+            print("Came up with set of thetas where some of them were out of range, trying again with different starting position")
             print()
             #try different starting orientation to get different end angles that will hopefully meet the angle limits of the joints
             thetaL = np.array([[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)]])
@@ -598,7 +598,7 @@ def invRightArm(xr, yr, zr):
             break
         else:
             
-            print("Came up with set of thetas where some of them where out of range, trying again with different starting position")
+            print("Came up with set of thetas where some of them were out of range, trying again with different starting position")
             print()
             #try different starting orientation to get different end angles 
             thetaR = np.array([[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)],[random.uniform(-3.14, 3.14)]])
@@ -1152,3 +1152,15 @@ def getLeftToPoint():
             totalRight(rarray)
             totalLeft(thetaNext)
             time.sleep(.05)
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            

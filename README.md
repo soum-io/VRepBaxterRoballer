@@ -2,7 +2,26 @@
 ### Group Members: _Michael Shea_ & _Jacob Heglund_
 ## Purpose
 This document is meant to explain how to obtain the results that are displayed in [this video.](https://www.youtube.com/watch?v=4WNGfvI6qjA&app=desktop) The first steps were to choose a robot and a simulation enviroment. We chose to use [_V-Rep_](http://www.coppeliarobotics.com/) for our simulation enviroment and [Baxter](http://www.rethinkrobotics.com/baxter/) as the robot. The following steps are a guide to reproduce what we did in a _Windows 10_ enviroment. There are many ways to control a robot in V-Rep. We chose to use the [Remote API](http://www.coppeliarobotics.com/helpFiles/en/remoteApiFunctionsPython.htm) with [Python 3](). We used the [Spyder IDE](https://www.python.org/downloads/) for all the programming.
+# Deliverable 5 - Demonstrate Motion Planning
+## The Job
+1. Write code that either returns a collision-free path between given start and goal configurations (i.e., a sequence of straight-line segments that is described by a list of nodes q1,…,qn where q1=θstart and qn=θgoal) or that returns failure if such a path could not be found. Your code must consider both self-collision and collision with obstacles.
 
+2. Create a short video (at most 120 seconds) that shows the robot moving along at least 3 different collision-free paths. Each path must be non-trivial, in the sense that it (1) consists of more than one straight-line segment, and (2) could not have been replaced by a path consisting of only one straight-line segment from θstart to θgoal. In other words, your video should demonstrate that your path planner is really working, that it really does allow your robot to avoid both self-collision and obstacles.
+## The Work
+1. The inverse kinematics are implemented in _pathPlanner.py_.
+2. _functions.py_ and _variables.py_ implement most of the functions from the [previous deliverables](https://github.com/smike1210/VRepBaxterRoballer/tree/master) to help obtain information such as the skew of a matrix, the different screw axis' of Baxter, etc.  This serves the purpose of keeping the main function _pathPlanner.py_ clean and readable.
+3. When run, the program will prompt the user to input the spatial coordinates they want the end effector of the robot arm to reach.  Choosing the spatial cooddinate can be tricky, since there are obstacles in the environment, but the [video](https://www.youtube.com/watch?v=f9xUGDt-kLo) we made shows a few configurations that the robot can reach and plan a path for.  
+
+## How to Reproduce What is Shown in the Video
+1. First, [download _V-Rep_.](http://www.coppeliarobotics.com/) This guide assumes you will download the x64 _Windows 10_ version of _V-Rep_.
+2. After the download is complete, open the _V-REP_PRO_EDU_version number_Setup.exe_ file and go through the instructions to install the program on your machine.
+3. Once the program is fully installed, open _V-Rep_. When you first open it, it should look like [this](https://preview.ibb.co/cfZzNn/First_Time_Opening_VRep.png).
+4. Next, it is time to focus on the programming of Baxter. Before we start programming, create a folder in a directory of your choice that is a copy of this [GitHub directory](https://github.com/smike1210/VRepBaxterRoballer/tree/master/deliverable4).
+5. You directory should look something like [this](https://preview.ibb.co/kmKPNn/Directory.png).
+6. The first step is to obtain the scene used that is shown in the video. To do this, open the file called _Baxter_no_scripts.ttt_. To do this, in _V-Rep_, go to _file_ -> _open scene_ and then select the _Baxter_no_scripts.ttt_ file. The scene should look like [this](https://preview.ibb.co/bGNiF7/scene.png).
+7. Open _pathPlanner.py_ in _Spyder_. If you have not downloaded _Spyder_ already, you can do so [here](https://pythonhosted.org/spyder/installation.html). Downloading it is outside the scope of this document, but can be done very easily, and [this link](https://pythonhosted.org/spyder/installation.html) has a great guide on how to do so.
+8. Make sure that _V-Rep_ is already open, and then [press the green play button on the top bar of _Spyder_](https://preview.ibb.co/bC4r2n/play_Button.png). After pressing the play button, if you have _Spyder_ and _V-Rep_ filling up two different halves of your screen, you should be able to interact with the program and see Baxter going through the motions seen in the video linked above.
+9. Fin! (For now, at least...)
 
 # Deliverable 4 - Demonstrate Collision Detection
 ## The Job
