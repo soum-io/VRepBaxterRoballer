@@ -999,18 +999,16 @@ def getRightToPoint(guess = True, x = 0, y = 0, z = 0, sig = .1):
     print(repr(answer))
     
     #make left arm go straight up so it doesnt hit anything lol
-    rotAngle = 0
+    rotAngle = math.degrees(theta_start[0])
     larray = np.array([rotAngle,0,-90,0,0,0,0,0])
     totalLeft(larray)
     for x in range(answer[0].size-1):
         theta_start_t = answer[:,x].reshape((8,1))
         theta_end_t = answer[:,x+1].reshape((8,1))
-        sig = .2
         dist = nl.norm(theta_start_t-theta_end_t)
         count = 1+math.ceil(dist/sig)
         s = 0
-        for blagh in range(count):
-            s = s + 1/count
+        for blagh in range(count+1):
             thetaNext = (1-s)*theta_start_t[:,0]+s*theta_end_t[:,0]
             for p in range(thetaNext.size):
                 thetaNext[p] =  math.degrees(thetaNext[p])
@@ -1019,17 +1017,15 @@ def getRightToPoint(guess = True, x = 0, y = 0, z = 0, sig = .1):
             totalLeft(larray)
             totalRight(thetaNext)
             time.sleep(.05)
+            s = s + 1/count
             
             
     
-def getLeftToPoint(guess = True, x = 0, y = 0, z = 0, sig = .1, init = True, theta_next = None):
+def getLeftToPoint(guess = True, x = 0, y = 0, z = 0, sig = .1):
     theta_start = np.zeros((8,1))
-    if init:
-        theta_start[0] = vrep.simxGetJointPosition(clientID, rotJoint, vrep.simx_opmode_streaming)[1]
-        for i in range(1,8):
-            theta_start[i] = vrep.simxGetJointPosition(clientID, leftArm[i-1], vrep.simx_opmode_streaming)[1]
-    else :
-        theta_start = np.copy(theta_next)
+    theta_start[0] = vrep.simxGetJointPosition(clientID, rotJoint, vrep.simx_opmode_streaming)[1]
+    for i in range(1,8):
+        theta_start[i] = vrep.simxGetJointPosition(clientID, leftArm[i-1], vrep.simx_opmode_streaming)[1]
     if guess:
         x = float(input("Enter the x coordinate of where you want the left arm to go: "))
         y = float(input("Enter the y coordinate of where you want the left arm to go: "))
@@ -1141,16 +1137,14 @@ def getLeftToPoint(guess = True, x = 0, y = 0, z = 0, sig = .1, init = True, the
         s = 0
         for blagh in range(count+1):
             thetaNext = (1-s)*theta_start_t[:,0]+s*theta_end_t[:,0]
-            toReturn = np.copy(thetaNext)
             for p in range(thetaNext.size):
                 thetaNext[p] =  math.degrees(thetaNext[p])
             rotAngle = thetaNext[0]
             rarray = np.array([rotAngle,0,-90,0,0,0,0,0])
             totalRight(rarray)
             totalLeft(thetaNext)
-            #time.sleep(.05)
+            time.sleep(.05)
             s = s + 1/count
-    return toReturn.reshape((8,1))
             
 def cubeCol(i, x, y , z):
     # when baxter picks up cube, all the values are set to -1
@@ -1208,6 +1202,7 @@ def playHenoi():
     third = table+height*3+offset
     midTravel = .1
     slowTravel = .05
+    pad = .01
 # =============================================================================
 #     xstart = .7
 #     ystart = 0
@@ -1218,15 +1213,15 @@ def playHenoi():
 # =============================================================================
     c0start = np.array([[1,0,0,xstart],
                   [0,1,0,ystart],
-                  [0,0,1,table+(height/2)],
+                  [0,0,1,table+(height/2)+pad],
                   [0,0,0,1]])
     c1start = np.array([[1,0,0,xstart],
                   [0,1,0,ystart],
-                  [0,0,1,table+height + (height/2)],
+                  [0,0,1,table+height + (height/2)+pad],
                   [0,0,0,1]])
     c2start = np.array([[1,0,0,xstart],
                   [0,1,0,ystart],
-                  [0,0,1,table+ 2*height + (height/2)],
+                  [0,0,1,table+ 2*height + (height/2)+pad],
                   [0,0,0,1]])
     moveObj(c0start, clientID, block0)
     moveObj(c1start, clientID, block1)
@@ -1254,67 +1249,147 @@ def playHenoi():
 
     
     #tower of henoi for 3 blocks
-    theta_next = getLeftToPoint(False, xstart, ystart, top, midTravel)
-    theta_next = getLeftToPoint(False, xstart, ystart, third, slowTravel, False, theta_next)
+    getLeftToPoint(False, xstart, ystart, top, midTravel)
+    getLeftToPoint(False, xstart, ystart, third, slowTravel)
     LeftCup(True)
-    theta_next = getLeftToPoint(False, xstart, ystart, top, midTravel)
-    theta_next = getLeftToPoint(False, xend, yend, top, midTravel, False, theta_next)
-    theta_next = getLeftToPoint(False, xend, yend, first, slowTravel, False, theta_next)
+    getLeftToPoint(False, xstart, ystart, top, midTravel)
+    getLeftToPoint(False, xend, yend, top, midTravel)
+    getLeftToPoint(False, xend, yend, first, slowTravel)
     LeftCup(False)
-    theta_next = getLeftToPoint(False, xend, yend, top, midTravel)
-    theta_next = getLeftToPoint(False, xstart, ystart, top, midTravel, False, theta_next)
-    theta_next = getLeftToPoint(False, xstart, ystart, second, slowTravel, False, theta_next)
+    getLeftToPoint(False, xend, yend, top, midTravel)
+    getLeftToPoint(False, xstart, ystart, top, midTravel)
+    getLeftToPoint(False, xstart, ystart, second, slowTravel)
     LeftCup(True)
-    theta_next = getLeftToPoint(False, xstart, ystart, top, midTravel)
-    theta_next = getLeftToPoint(False, xmiddle, ymiddle, top, midTravel, False, theta_next)
-    theta_next = getLeftToPoint(False, xmiddle, ymiddle, first, slowTravel, False, theta_next)
+    getLeftToPoint(False, xstart, ystart, top, midTravel)
+    getLeftToPoint(False, xmiddle, ymiddle, top, midTravel)
+    getLeftToPoint(False, xmiddle, ymiddle, first, slowTravel)
     LeftCup(False)
-    theta_next = getLeftToPoint(False, xmiddle, ymiddle, top, midTravel)
-    theta_next = getLeftToPoint(False, xend, yend, top, midTravel, False, theta_next)
-    theta_next = getLeftToPoint(False, xend, yend, first, slowTravel, False, theta_next)
+    getLeftToPoint(False, xmiddle, ymiddle, top, midTravel)
+    getLeftToPoint(False, xend, yend, top, midTravel)
+    getLeftToPoint(False, xend, yend, first, slowTravel)
     LeftCup(True)
-    theta_next = getLeftToPoint(False, xend, yend, top, midTravel)
-    theta_next = getLeftToPoint(False, xmiddle, ymiddle, top, midTravel, False, theta_next)
-    theta_next = getLeftToPoint(False, xmiddle, ymiddle, second, slowTravel, False, theta_next)
+    getLeftToPoint(False, xend, yend, top, midTravel)
+    getLeftToPoint(False, xmiddle, ymiddle, top, midTravel)
+    getLeftToPoint(False, xmiddle, ymiddle, second, slowTravel)
     LeftCup(False)
-    theta_next = getLeftToPoint(False, xmiddle, ymiddle, top, midTravel)
-    theta_next = getLeftToPoint(False, xstart, ystart, top, midTravel, False, theta_next)
-    theta_next = getLeftToPoint(False, xstart, ystart, first, slowTravel, False, theta_next)
-    LeftCup(True)
-    theta_next = getLeftToPoint(False, xstart, ystart, top, midTravel)
-    theta_next = getLeftToPoint(False, xend, yend, top, midTravel, False, theta_next)
-    theta_next = getLeftToPoint(False, xend, yend, first, slowTravel, False, theta_next)
-    LeftCup(False)
-    theta_next = getLeftToPoint(False, xend, yend, top, midTravel)
-    theta_next = getLeftToPoint(False, xmiddle, ymiddle, top, midTravel, False, theta_next)
-    theta_next = getLeftToPoint(False, xmiddle, ymiddle, second, slowTravel, False, theta_next)
-    LeftCup(True)
-    theta_next = getLeftToPoint(False, xmiddle, ymiddle, top, midTravel)
-    theta_next = getLeftToPoint(False, xstart, ystart, top, midTravel, False, theta_next)
-    theta_next = getLeftToPoint(False, xstart, ystart, first, slowTravel, False, theta_next)
-    LeftCup(False)
-    theta_next = getLeftToPoint(False, xstart, ystart, top, midTravel)
-    theta_next = getLeftToPoint(False, xmiddle, ymiddle, top, midTravel, False, theta_next)
-    theta_next = getLeftToPoint(False, xmiddle, ymiddle, first, slowTravel, False, theta_next)
-    LeftCup(True)
-    theta_next = getLeftToPoint(False, xmiddle, ymiddle, top, midTravel)
-    theta_next = getLeftToPoint(False, xend, yend, top, midTravel, False, theta_next)
-    theta_next = getLeftToPoint(False, xend, yend, second, slowTravel, False, theta_next)
-    LeftCup(False)
-    theta_next = getLeftToPoint(False, xend, yend, top, midTravel)
-    theta_next = getLeftToPoint(False, xstart, ystart, top, midTravel, False, theta_next)
-    theta_next = getLeftToPoint(False, xstart, ystart, first, slowTravel, False, theta_next)
-    LeftCup(True)
-    theta_next = getLeftToPoint(False, xstart, ystart, top, midTravel)
-    theta_next = getLeftToPoint(False, xend, yend, top, midTravel, False, theta_next)
-    theta_next = getLeftToPoint(False, xend, yend, third, slowTravel, False, theta_next)
-    LeftCup(False)
+    getLeftToPoint(False, xmiddle, ymiddle, top, midTravel)
+    getRightToPoint(False, xstart, ystart, top, midTravel)
+    getRightToPoint(False, xstart, ystart, first, slowTravel)
+    RightCup(True)
+    getRightToPoint(False, xstart, ystart, top, midTravel)
+    getRightToPoint(False, xend, yend, top, midTravel)
+    getRightToPoint(False, xend, yend, first, slowTravel)
+    RightCup(False)
+    getRightToPoint(False, xend, yend, top, midTravel)
+    getRightToPoint(False, xmiddle, ymiddle, top, midTravel)
+    getRightToPoint(False, xmiddle, ymiddle, second, slowTravel)
+    RightCup(True)
+    getRightToPoint(False, xmiddle, ymiddle, top, midTravel)
+    getRightToPoint(False, xstart, ystart, top, midTravel)
+    getRightToPoint(False, xstart, ystart, first, slowTravel)
+    RightCup(False)
+    getRightToPoint(False, xstart, ystart, top, midTravel)
+    getRightToPoint(False, xmiddle, ymiddle, top, midTravel)
+    getRightToPoint(False, xmiddle, ymiddle, first, slowTravel)
+    RightCup(True)
+    getRightToPoint(False, xmiddle, ymiddle, top, midTravel)
+    getRightToPoint(False, xend, yend, top, midTravel)
+    getRightToPoint(False, xend, yend, second, slowTravel)
+    RightCup(False)
+    getRightToPoint(False, xend, yend, top, midTravel)
+    getRightToPoint(False, xstart, ystart, top, midTravel)
+    getRightToPoint(False, xstart, ystart, first, slowTravel)
+    RightCup(True)
+    getRightToPoint(False, xstart, ystart, top, midTravel)
+    getRightToPoint(False, xend, yend, top, midTravel)
+    getRightToPoint(False, xend, yend, third, slowTravel)
+    RightCup(False)
     fireArr = np.array([[1,0,0,xend],
                   [0,1,0,yend],
                   [0,0,1,table],
                   [0,0,0,1]])
     moveObj(fireArr,clientID,fire)
-    theta_next = getLeftToPoint(False, xend, yend, 1.5, midTravel, False, theta_next)
+    getLeftToPoint(False, xend, yend, 1.5, midTravel)
+    
+    
+    
+# =============================================================================
+#     getLeftToPoint(False, xstart, ystart, top, midTravel)
+#     getLeftToPoint(False, xstart, ystart, third, slowTravel)
+#     LeftCup(True)
+#     time.sleep(.5)
+#     getLeftToPoint(False, xstart, ystart, top, midTravel)
+#     getLeftToPoint(False, xend, yend, top, midTravel)
+#     getLeftToPoint(False, xend, yend, first, slowTravel)
+#     LeftCup(False)
+#     time.sleep(.5)
+#     getLeftToPoint(False, xend, yend, top, midTravel)
+#     getRightToPoint(False, xstart, ystart, top, midTravel)
+#     getRightToPoint(False, xstart, ystart, second, slowTravel)
+#     RightCup(True)
+#     time.sleep(.5)
+#     getRightToPoint(False, xstart, ystart, top, midTravel)
+#     getRightToPoint(False, xmiddle, ymiddle, top, midTravel)
+#     getRightToPoint(False, xmiddle, ymiddle, first, slowTravel)
+#     RightCup(False)
+#     time.sleep(.5)
+#     getRightToPoint(False, xmiddle, ymiddle, top, midTravel)
+#     getLeftToPoint(False, xend, yend, top, midTravel)
+#     getLeftToPoint(False, xend, yend, first, slowTravel)
+#     LeftCup(True)
+#     time.sleep(.5)
+#     getLeftToPoint(False, xend, yend, top, midTravel)
+#     getLeftToPoint(False, xmiddle, ymiddle, top, midTravel)
+#     getLeftToPoint(False, xmiddle, ymiddle, second, slowTravel)
+#     LeftCup(False)
+#     time.sleep(.5)
+#     getLeftToPoint(False, xmiddle, ymiddle, top, midTravel)
+#     getRightToPoint(False, xstart, ystart, top, midTravel)
+#     getRightToPoint(False, xstart, ystart, first, slowTravel)
+#     RightCup(True)
+#     time.sleep(.5)
+#     getRightToPoint(False, xstart, ystart, top, midTravel)
+#     getRightToPoint(False, xend, yend, top, midTravel)
+#     getRightToPoint(False, xend, yend, first, slowTravel)
+#     RightCup(False)
+#     time.sleep(.5)
+#     getRightToPoint(False, xend, yend, top, midTravel)
+#     getLeftToPoint(False, xmiddle, ymiddle, top, midTravel)
+#     getLeftToPoint(False, xmiddle, ymiddle, second, slowTravel)
+#     LeftCup(True)
+#     time.sleep(.5)
+#     getLeftToPoint(False, xmiddle, ymiddle, top, midTravel)
+#     getLeftToPoint(False, xstart, ystart, top, midTravel)
+#     getLeftToPoint(False, xstart, ystart, first, slowTravel)
+#     LeftCup(False)
+#     time.sleep(.5)
+#     getLeftToPoint(False, xstart, ystart, top, midTravel)
+#     getRightToPoint(False, xmiddle, ymiddle, top, midTravel)
+#     getRightToPoint(False, xmiddle, ymiddle, first, slowTravel)
+#     RightCup(True)
+#     time.sleep(.5)
+#     getRightToPoint(False, xmiddle, ymiddle, top, midTravel)
+#     getRightToPoint(False, xend, yend, top, midTravel)
+#     getRightToPoint(False, xend, yend, second, slowTravel)
+#     RightCup(False)
+#     time.sleep(.5)
+#     getRightToPoint(False, xend, yend, top, midTravel)
+#     getLeftToPoint(False, xstart, ystart, top, midTravel)
+#     getLeftToPoint(False, xstart, ystart, first, slowTravel)
+#     LeftCup(True)
+#     time.sleep(.5)
+#     getLeftToPoint(False, xstart, ystart, top, midTravel)
+#     getLeftToPoint(False, xend, yend, top, midTravel)
+#     getLeftToPoint(False, xend, yend, third, slowTravel)
+#     LeftCup(False)
+#     time.sleep(.5)
+#     fireArr = np.array([[1,0,0,xend],
+#                   [0,1,0,yend],
+#                   [0,0,1,table],
+#                   [0,0,0,1]])
+#     moveObj(fireArr,clientID,fire)
+#     getLeftToPoint(False, xend, yend, 1.5, midTravel)
+# =============================================================================
     
             
             

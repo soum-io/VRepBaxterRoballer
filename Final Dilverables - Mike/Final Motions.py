@@ -7,7 +7,13 @@ larray = np.array([0,0,0,0,0,0,0,0])
 totalLeft(larray)
 totalRight(rarray)
 
-.7
+fireArr = np.array([[1,0,0,-5],
+              [0,1,0,-5],
+              [0,0,1,-5],
+              [0,0,0,1]])
+moveObj(fireArr,clientID,fire)
+
+
 playHenoi()
 
 # =============================================================================

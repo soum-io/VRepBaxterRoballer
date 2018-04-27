@@ -76,7 +76,7 @@ MR = np.array([[1,0,0,.0819],
                   [0,0,0,1]])
     
 leftcup = "BaxterVacuumCup_active"
-rightcup = "BaxterVacuumCup#1_active"
+rightcup = "BaxterVacuumCup#0_active"
     
 objHandleLeftTheoretical = int(vrep.simxGetObjectHandle(clientID, 'ReferenceFrame', vrep.simx_opmode_blocking)[1])
 objHandleRightTheoretical = int(vrep.simxGetObjectHandle(clientID, 'ReferenceFrame0', vrep.simx_opmode_blocking)[1])
