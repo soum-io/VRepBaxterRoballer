@@ -1,7 +1,18 @@
 # ECE 470 Motion Demonstration Project
 ### Group Members: _Michael Shea_ & _Jacob Heglund_
 ## Purpose
-This document is meant to explain how to obtain the results that are displayed in [this video.](https://www.youtube.com/watch?v=4WNGfvI6qjA&app=desktop) The first steps were to choose a robot and a simulation enviroment. We chose to use [_V-Rep_](http://www.coppeliarobotics.com/) for our simulation enviroment and [Baxter](http://www.rethinkrobotics.com/baxter/) as the robot. The following steps are a guide to reproduce what we did in a _Windows 10_ enviroment. There are many ways to control a robot in V-Rep. We chose to use the [Remote API](http://www.coppeliarobotics.com/helpFiles/en/remoteApiFunctionsPython.htm) with [Python 3](). We used the [Spyder IDE](https://www.python.org/downloads/) for all the programming.
+This document is meant to explain how to obtain the results that are displayed in [this video.](https://www.youtube.com/watch?v=MNY7lrb8RS0) The first steps were to choose a robot and a simulation enviroment. We chose to use [_V-Rep_](http://www.coppeliarobotics.com/) for our simulation enviroment and [Baxter](http://www.rethinkrobotics.com/baxter/) as the robot. The following steps are a guide to reproduce what we did in a _Windows 10_ enviroment. There are many ways to control a robot in V-Rep. We chose to use the [Remote API](http://www.coppeliarobotics.com/helpFiles/en/remoteApiFunctionsPython.htm) with [Python 3](). We used the [Spyder IDE](https://www.python.org/downloads/) for all the programming.
+
+# Final Project Video
+## The Job
+1. create a video that shows the results of your final project
+
+## The Work
+1. All work for this deliverable can be found in the _Final Deliverables_ folder.
+2. The main code is implemented in _Final Motions.py_.
+2. _functions.py_ and _variables.py_ implement most of the functions from the [previous deliverables](https://github.com/smike1210/VRepBaxterRoballer/tree/master) to help obtain information such as the skew of a matrix, the different screw axis' of Baxter, etc.  This serves the purpose of keeping the main function _Final Motions.py_ clean and readable.
+3. When run, The user will be prompted to enter 3 different points for the Tower of Hanoi Problem. Baxter will then proceed to solve the problem using three blocks.
+
 # Deliverable 5 - Demonstrate Motion Planning
 ## The Job
 1. Write code that either returns a collision-free path between given start and goal configurations (i.e., a sequence of straight-line segments that is described by a list of nodes q1,…,qn where q1=θstart and qn=θgoal) or that returns failure if such a path could not be found. Your code must consider both self-collision and collision with obstacles.
